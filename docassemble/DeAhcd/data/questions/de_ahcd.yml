@@ -1,0 +1,407 @@
+---
+include:
+  - docassemble.AssemblyLine:assembly_line.yml
+---
+metadata:
+  title: >-
+    Delaware Advance Health Care Directive
+  short title: >-
+    DE AHCD
+  description: |-
+    This interview helps someone in Delaware get a Delaware Advance Health Care Directive.
+  can_I_use_this_form: |
+    If you are a CLASI advocate, you can use this interview to develop an AHCD for your client.
+  before_you_start: |
+    This interview will help you develop a Delaware Advance Health Care Directive for your client.
+    
+    Before you get started, please gather:
+    
+    1. Client contact information
+    2. Agent(s) contact information and relationship to client
+    
+    When you are finished, you will need to:
+    
+    1. Download the DOCX form and send to an attorney for review.
+  maturity: production
+  estimated_completion_minutes: 10
+  estimated_completion_delta: 5
+  LIST_topics: 
+    - "ES-05-00-00-00"
+    - "HE-00-00-00-00"
+  tags:
+    - "ES-05-00-00-00"
+    - "HE-00-00-00-00"
+  authors:
+    - Jason Stoehr
+  original_form: []
+  original_form_published_on: 2025-08-01
+  allowed_courts: []
+  typical_role: "na"
+  al_weaver_version: "1.11.0"
+  generated_on: "2025-08-01"
+  languages:
+    - en
+  jurisdiction: NAM-US-US+DE
+  review_date: 2025-08-01
+  form_titles:
+    - DE AHCD
+  form_numbers: []
+  update_notes: |
+---
+code: |
+  # This controls the default country and list of states in address field questions
+  AL_DEFAULT_COUNTRY = "US"
+---
+code: |
+  # This controls the default state in address field questions
+  AL_DEFAULT_STATE = "DE"
+---
+code: |
+  github_repo_name =  'docassemble-DeAhcd'
+---
+code: |
+  interview_short_title = "Get a Delaware Advance Health Care Directive"
+---
+code: |
+  al_form_type = "other_form" 
+---
+objects:
+  - witnesses: ALPeopleList.using(there_are_any=True)
+  - users: ALPeopleList.using(ask_number=True,target_number=1)
+  - agents: ALPeopleList.using(there_are_any=True)  
+---
+sections:
+  - review_de_ahcd: Review your answers
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_de_ahcd
+code: |
+  # Set the allowed courts for this interview
+  nav.set_section("review_de_ahcd")
+  user_role = "na"
+  user_ask_role = "na"
+  users.gather()
+  set_parts(subtitle=str(users))
+  users[0].address.address
+  agents[i]
+  agents[i].phone_number
+  specific_instructions
+  set_progress(25)
+  anatomicalgifts.research
+  institutionwitness.name.first
+  witnesses[0].address.address
+  interview_order_de_ahcd = True
+---
+###################### Main order ######################
+comment: |
+  This block includes the logic for standalone interviews.
+  Delete mandatory: True to include in another interview
+mandatory: True
+code: |
+  al_intro_screen
+  de_ahcd_intro
+  interview_order_de_ahcd
+  signature_date
+  # Store anonymous data for analytics / statistics
+  store_variables_snapshot(
+      persistent=True,
+      data={
+          "zip": showifdef("users[0].address.zip"),
+          "reached_interview_end": True,
+      },
+  )
+  de_ahcd_download
+---
+id: DE_AHCD
+continue button field: de_ahcd_intro
+question: |
+  DE AHCD
+subquestion: |
+  This interview will help you develop a Delaware Advance Health Care Directive for your client.
+  
+  Before you get started, please gather:
+  
+  1. Client contact information
+  2. Agent(s) contact information and relationship to client
+  
+  When you are finished, you will need to:
+  
+  1. Download the DOCX form and send to an attorney for review.
+
+  If you are a CLASI advocate, you can use this interview to develop an AHCD for your client.
+
+  Most people take about 10 minutes to complete this interview.
+---
+id: Client Information
+question: |
+  Client Information
+fields:
+  - "Users.address.address": users.address.address
+  - "Users.name.full": users.name.full
+  - "Resident institution": resident_institution
+    datatype: yesno
+---
+id: Designation of Agents
+question: |
+  Designation of Agents
+subquestion: |
+  Use this screen to identify whether there will be a single agent or joint agents, and to provide the agent(s) relationship to the client and their contact information.
+fields: 
+  - "Single Agent": single_agent
+    datatype: yesno
+  - "Joint Agents": joint_agents
+    datatype: yesno    
+  - "Agent phone number": agents[i].phone_number
+    datatype: number
+  - "Agent address": agents[i].address.address
+  - "Agent relationship": agents.relationship
+  - "Second Agent relationship": agents[i].relationship
+  - "Agents Name": agents[i].name.full
+  - "Second Agent address": agents[i].address.address
+  - "Second Agent name": agents[i].name.full
+---
+id: End of Life Decisions
+question: |
+  End of Life Decisions
+fields:
+  - "Specific instructions": specific_instructions
+    datatype: yesno
+  - "Prolong life": prolong_life
+    datatype: yesno
+  - "Not prolong life": not_prolong_life
+    datatype: yesno
+  - "No specific instructions": nospecific_instructions
+    datatype: yesno
+  - "Pain relief": pain_relief
+    datatype: yesno
+---
+id: Anatomical Gifts at Death
+question: |
+  Anatomical Gifts at Death
+fields:
+  - "Anatomical gifts - research": anatomicalgifts.research
+    datatype: yesno
+  - "Anatomical gifts - transplantation": anatomicalgifts.transplantation
+  - "Antomical gifts custom instructions": antomicalgifts.custom
+    datatype: yesno
+  - "Anatomical gifts any purpose": anatomicalgifts.anypurpose
+    datatype: yesno
+---
+id: Witnesses
+question: |
+  Witnesses
+subquestion: |
+  Enter names of witnesses of signature.
+fields:
+  - "Witness name": institutionwitness.name.first
+---
+id: preview de_ahcd
+question: |
+  Preview your form before you sign it
+subquestion: |
+  Here is a preview of the form you will sign on the next page.   
+  
+  ${ al_recipient_bundle.as_pdf(key='preview') }
+
+  Click the image to open it in a new tab. Click the "Edit answers" button
+  to edit your answers.
+
+  ${ action_button_html(url_action('review_de_ahcd'), label='Edit answers', color='info') }
+  
+  Remember to come back to this window to continue and sign your form.
+continue button field: de_ahcd_preview_question    
+---
+code: |
+  signature_fields = []
+---
+id: de ahcd review screen
+event: review_de_ahcd
+question: |
+  Review your answers
+review:
+  - Edit: specific_instructions
+    button: |
+      **Specific instructions**:
+      ${ word(yesno(specific_instructions)) }
+  - Edit: users.revisit
+    button: |
+      **Users**
+
+      % for item in users:
+        * ${ item }
+      % endfor
+  - Edit: institutionwitness.name.first
+    button: |
+      **Witness name**:
+      ${ institutionwitness.name.first }
+  - Edit: joint_agents
+    button: |
+      **Joint agents**:
+      ${ word(yesno(joint_agents)) }
+  - Edit: prolong_life
+    button: |
+      **Prolong life**:
+      ${ word(yesno(prolong_life)) }
+  - Edit: not_prolong_life
+    button: |
+      **Not prolong life**:
+      ${ word(yesno(not_prolong_life)) }
+  - Edit: agents.phone_number
+    button: |
+      **agents[i].phone number**:
+      ${ agents[i].phone_number }
+  - Edit: nospecific_instructions
+    button: |
+      **No specific instructions**:
+      ${ word(yesno(nospecific_instructions)) }
+  - Edit: anatomicalgifts.research
+    button: |
+      **Anatomical gifts - research**:
+      ${ word(yesno(anatomicalgifts.research)) }
+  - Edit: single_agent
+    button: |
+      **Single agent**:
+      ${ word(yesno(single_agent)) }
+  - Edit: agents[i].address.address
+    button: |
+      **Agent address**:
+      ${ agents[i].address.address.block() }
+  - Edit: agents.relationship
+    button: |
+      **Agent relationship**:
+      ${ agents.relationship }
+  - Edit: resident_institution
+    button: |
+      **Resident institution**:
+      ${ word(yesno(resident_institution)) }
+  - Edit: witnesses.revisit
+    button: |
+      **Witnesses**
+
+      % for item in witnesses:
+        * ${ item }
+      % endfor
+  - Edit: pain_relief
+    button: |
+      **Pain relief**:
+      ${ word(yesno(pain_relief)) }
+  - Edit: anatomicalgifts.transplantation
+    button: |
+      **Anatomical gifts - transplantation**:
+      ${ anatomicalgifts.transplantation }
+  - Edit: agents[i].relationship
+    button: |
+      **Second Agent relationship**:
+      ${ agents[i].relationship }
+  - Edit: agents[i].name.first
+    button: |
+      **Agents First Name**:
+      ${ agents[i].name.first }
+  - Edit: antomicalgifts.custom
+    button: |
+      **Antomical gifts custom instructions**:
+      ${ word(yesno(antomicalgifts.custom)) }
+  - Edit: anatomicalgifts.anypurpose
+    button: |
+      **Anatomical gifts any purpose**:
+      ${ word(yesno(anatomicalgifts.anypurpose)) }
+  - Edit: single_agents
+    button: |
+      **Single agent?**:
+      ${ word(yesno(single_agents)) }
+  - Edit: agents[i].address.address
+    button: |
+      **Agent address**:
+      ${ agents[i].address.address.block() }
+---
+continue button field: users.revisit
+question: |
+  Edit users
+subquestion: |
+  ${ users.table }
+
+  ${ users.add_action() }
+---
+table: users.table
+rows: users
+columns:
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+edit:
+  - address.address
+  - name.first
+confirm: True
+
+---
+continue button field: witnesses.revisit
+question: |
+  Edit witnesses
+subquestion: |
+  ${ witnesses.table }
+
+  ${ witnesses.add_action() }
+---
+table: witnesses.table
+rows: witnesses
+columns:
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+edit:
+  - address.address
+confirm: True
+
+---
+id: download de_ahcd
+event: de_ahcd_download
+question: |
+  All done
+subquestion: |
+  Thank you ${users}. Your form is ready to download and deliver.
+  
+  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_de_ahcd'), label='Edit answers', color='info') }
+  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=True) }
+
+progress: 100
+---
+# ALDocument objects specify the metadata for each template
+objects:
+  - de_ahcd_Post_interview_instructions: ALDocument.using(title="Instructions", filename="de_ahcd_next_steps.docx", enabled=True, has_addendum=False)
+  - de_ahcd_attachment: ALDocument.using(title="DE AHCD", filename="de_ahcd", enabled=True, has_addendum=False, )
+---
+# Bundles group the ALDocuments into separate downloads, such as for court and for the user
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[de_ahcd_Post_interview_instructions, de_ahcd_attachment], filename="de_ahcd", title="All forms to download for your records", enabled=True)
+  - al_recipient_bundle: ALDocumentBundle.using(elements=[de_ahcd_attachment],  filename="de_ahcd", title="All forms to file", enabled=True)
+---
+# Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
+# used for "preview" and "final" keys, and logic in the template checks the value of 
+# `i` to show or hide the user's signature
+attachment:
+  name: Post-interview-Instructions
+  filename: de_ahcd_next_steps
+  docx template file: de_ahcd_next_steps.docx
+  variable name: de_ahcd_Post_interview_instructions[i]
+  skip undefined: True
+  tagged pdf: True
+---
+attachment:
+  name: de ahcd
+  filename: de_ahcd
+  variable name: de_ahcd_attachment[i]
+  skip undefined: True
+  docx template file: de_ahcd.docx
+  tagged pdf: True
+
+
+
