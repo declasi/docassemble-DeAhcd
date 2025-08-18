@@ -44,7 +44,7 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.DeAhcd',
-      version='1.1.1',
+      version='1.1.2',
       description=(''),
       long_description='# docassemble-DeAhcd',
       long_description_content_type='text/markdown',
