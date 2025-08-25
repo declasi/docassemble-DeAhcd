@@ -85,8 +85,9 @@ code: |
   users.gather()
   set_parts(subtitle=str(users))
   users[0].address.address
-  agents[i]
-  agents[i].phone_number
+  agents[0]
+  agents[0].phone_number
+  agents.gather()
   specific_instructions
   set_progress(25)
   anatomicalgifts.research
@@ -153,14 +154,14 @@ fields:
     datatype: yesno
   - "Joint Agents": joint_agents
     datatype: yesno    
-  - "Agent phone number": agents[i].phone_number
+  - "Agent phone number": agents[0].phone_number
     datatype: number
-  - "Agent address": agents[i].address.address
-  - "Agent relationship": agents.relationship
-  - "Second Agent relationship": agents[i].relationship
-  - "Agents Name": agents[i].name.full
-  - "Second Agent address": agents[i].address.address
-  - "Second Agent name": agents[i].name.full
+  - "Agent address": agents[0].address.address
+  - "Agent relationship": agents[0].relationship
+  - "Second Agent relationship": agents[1].relationship
+  - "Agents Name": agents[0].name.full
+  - "Second Agent address": agents[1].address.address
+  - "Second Agent name": agents[1].name.full
 ---
 id: End of Life Decisions
 question: |
@@ -184,7 +185,7 @@ fields:
   - "Anatomical gifts - research": anatomicalgifts.research
     datatype: yesno
   - "Anatomical gifts - transplantation": anatomicalgifts.transplantation
-  - "Antomical gifts custom instructions": antomicalgifts.custom
+  - "Anatomical gifts custom instructions": anatomicalgifts.custom
     datatype: yesno
   - "Anatomical gifts any purpose": anatomicalgifts.anypurpose
     datatype: yesno
@@ -250,8 +251,8 @@ review:
       ${ word(yesno(not_prolong_life)) }
   - Edit: agents.phone_number
     button: |
-      **agents[i].phone number**:
-      ${ agents[i].phone_number }
+      **agents[0].phone number**:
+      ${ agents[0].phone_number }
   - Edit: nospecific_instructions
     button: |
       **No specific instructions**:
@@ -264,14 +265,14 @@ review:
     button: |
       **Single agent**:
       ${ word(yesno(single_agent)) }
-  - Edit: agents[i].address.address
+  - Edit: agents[0].address.address
     button: |
       **Agent address**:
-      ${ agents[i].address.address.block() }
+      ${ agents[0].address.address.block() }
   - Edit: agents.relationship
     button: |
       **Agent relationship**:
-      ${ agents.relationship }
+      ${ agents[0].relationship }
   - Edit: resident_institution
     button: |
       **Resident institution**:
@@ -291,30 +292,30 @@ review:
     button: |
       **Anatomical gifts - transplantation**:
       ${ anatomicalgifts.transplantation }
-  - Edit: agents[i].relationship
+  - Edit: agents[1].relationship
     button: |
       **Second Agent relationship**:
-      ${ agents[i].relationship }
-  - Edit: agents[i].name.first
+      ${ agents[1].relationship }
+  - Edit: agents[1].name.first
     button: |
       **Agents First Name**:
-      ${ agents[i].name.first }
-  - Edit: antomicalgifts.custom
+      ${ agents[1].name.first }
+  - Edit: anatomicalgifts.custom
     button: |
       **Antomical gifts custom instructions**:
-      ${ word(yesno(antomicalgifts.custom)) }
+      ${ word(yesno(anatomicalgifts.custom)) }
   - Edit: anatomicalgifts.anypurpose
     button: |
       **Anatomical gifts any purpose**:
       ${ word(yesno(anatomicalgifts.anypurpose)) }
-  - Edit: single_agents
+  - Edit: single_agent
     button: |
       **Single agent?**:
-      ${ word(yesno(single_agents)) }
-  - Edit: agents[i].address.address
+      ${ word(yesno(single_agent)) }
+  - Edit: agents[1].address.address
     button: |
       **Agent address**:
-      ${ agents[i].address.address.block() }
+      ${ agents[1].address.address.block() }
 ---
 continue button field: users.revisit
 question: |
