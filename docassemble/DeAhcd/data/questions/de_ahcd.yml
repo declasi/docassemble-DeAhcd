@@ -87,7 +87,6 @@ code: |
   users[0].address.address
   agents[0]
   agents[0].phone_number
-  agents.gather()
   specific_instructions
   set_progress(25)
   anatomicalgifts.research
