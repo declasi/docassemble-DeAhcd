@@ -68,7 +68,7 @@ code: |
 objects:
   - witnesses: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - agents: ALPeopleList.using(there_are_any=True)  
+  - agents: ALPeopleList.using(ask_number=True, object_type=Individual)  
 ---
 sections:
   - review_de_ahcd: Review your answers
@@ -85,8 +85,7 @@ code: |
   users.gather()
   set_parts(subtitle=str(users))
   users[0].address.address
-  agents[0]
-  agents[0].phone_number
+  agents.gather()
   specific_instructions
   set_progress(25)
   anatomicalgifts.research
@@ -145,22 +144,21 @@ fields:
 ---
 id: Designation of Agents
 question: |
-  Designation of Agents
-subquestion: |
   Use this screen to identify whether there will be a single agent or joint agents, and to provide the agent(s) relationship to the client and their contact information.
+subquestion: |
+  How many agents do you want to designate?
 fields: 
-  - "Single Agent": single_agent
-    datatype: yesno
-  - "Joint Agents": joint_agents
-    datatype: yesno    
-  - "Agent phone number": agents[0].phone_number
+ - no label: agents.target_number
+   datatype: integer 
+---
+question: |
+  Information about your ${ordinal(i)} agent
+fields:  
+  - "Agent phone number": agents[i].phone_number
     datatype: number
-  - "Agent address": agents[0].address.address
-  - "Agent relationship": agents[0].relationship
-  - "Second Agent relationship": agents[1].relationship
-  - "Agents Name": agents[0].name.full
-  - "Second Agent address": agents[1].address.address
-  - "Second Agent name": agents[1].name.full
+  - "Agent address": agents[i].address.address
+  - "Agent relationship": agents[i].relationship
+  - "Agent Name": agents[i].name.full
 ---
 id: End of Life Decisions
 question: |
