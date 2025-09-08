@@ -86,6 +86,9 @@ code: |
   set_parts(subtitle=str(users))
   users[0].address.address
   agents.gather()
+  agents[i].relationship
+  agents[i].phone_number
+  agents[i].address.address
   specific_instructions
   set_progress(25)
   anatomicalgifts.research
@@ -139,7 +142,7 @@ question: |
 fields:
   - "Users.address.address": users.address.address
   - "Users.name.full": users.name.full
-  - "Resident institution": resident_institution
+  - "Resident institution": users.resident_institution
     datatype: yesno
 ---
 id: Designation of Agents
