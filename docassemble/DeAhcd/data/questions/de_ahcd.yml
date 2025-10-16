@@ -68,7 +68,7 @@ code: |
 objects:
   - witnesses: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - agents: ALPeopleList.using(ask_number=True, object_type=Individual)  
+  - agents: ALPeopleList.using(ask_number=True, object_type=ALIndividual, there_are_any=True)  
 ---
 sections:
   - review_de_ahcd: Review your answers
@@ -86,9 +86,6 @@ code: |
   set_parts(subtitle=str(users))
   users[0].address.address
   agents.gather()
-  agents[i].relationship
-  agents[i].phone_number
-  agents[i].address.address
   specific_instructions
   set_progress(25)
   anatomicalgifts.research
@@ -154,14 +151,38 @@ fields:
  - no label: agents.target_number
    datatype: integer 
 ---
+id: agent detail
+sets:
+  - agents[i].name.first
+  - agents[i].name.last
+  - agents[i].name.middle
+  - agents[i].name.suffix
+  - agents[i].address.address
+  - agents[i].address.city
+  - agents[i].address.state
+  - agents[i].address.zip
 question: |
   Information about your ${ordinal(i)} agent
 fields:  
-  - "Agent phone number": agents[i].phone_number
-    datatype: number
-  - "Agent address": agents[i].address.address
+  - note: |
+      Agent's Name:
+  - code: |
+      agents[i].name_fields()
   - "Agent relationship": agents[i].relationship
-  - "Agent Name": agents[i].name.full
+  - Street address: agents[i].address.address
+    address autocomplete: True
+  - Address line 2: agents[i].address.unit
+    required: False
+  - City: agents[i].address.city
+  - State: agents[i].address.state
+    default: IL      
+  - ZIP code: agents[i].address.zip
+  - "Agent phone number": agents[i].phone_number
+    datatype: al_international_phone
+---
+code: |
+  agents[i].phone_number
+---
 ---
 id: End of Life Decisions
 question: |
@@ -182,12 +203,12 @@ id: Anatomical Gifts at Death
 question: |
   Anatomical Gifts at Death
 fields:
-  - "Anatomical gifts - research": anatomicalgifts.research
+  - "Anatomical gifts - research": anatomicalgifts_research
     datatype: yesno
-  - "Anatomical gifts - transplantation": anatomicalgifts.transplantation
-  - "Anatomical gifts custom instructions": anatomicalgifts.custom
+  - "Anatomical gifts - transplantation": anatomicalgifts_transplantation
+  - "Anatomical gifts custom instructions": anatomicalgifts_custom
     datatype: yesno
-  - "Anatomical gifts any purpose": anatomicalgifts.anypurpose
+  - "Anatomical gifts any purpose": anatomicalgifts_anypurpose
     datatype: yesno
 ---
 id: Witnesses
