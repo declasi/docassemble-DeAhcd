@@ -68,7 +68,8 @@ code: |
 objects:
   - witnesses: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - agents: ALPeopleList.using(ask_number=True, object_type=ALIndividual, there_are_any=True)  
+  - agents: ALPeopleList.using(ask_number=True, object_type=ALIndividual, there_are_any=True) 
+  - alt_agents: ALPeopleList.using(ask_number=True, object_type=ALIndividual, there_are_any=True)
 ---
 sections:
   - review_de_ahcd: Review your answers
@@ -86,6 +87,8 @@ code: |
   set_parts(subtitle=str(users))
   users[0].address.address
   agents.gather()
+  alt_agents.gather()
+  healthinfo_restricted
   specific_instructions
   set_progress(25)
   anatomicalgifts.research
@@ -139,12 +142,11 @@ question: |
 fields:
   - "Users.address.address": users.address.address
   - "Users.name.full": users.name.full
-  - "Resident institution": users.resident_institution
-    datatype: yesno
+  - "Users.dob": users.dob
 ---
 id: Designation of Agents
 question: |
-  Use this screen to identify whether there will be a single agent or joint agents, and to provide the agent(s) relationship to the client and their contact information.
+  Use this screen to identify the number of agents, and to provide the agent(s) relationship to the client and their contact information.
 subquestion: |
   How many agents do you want to designate?
 fields: 
@@ -168,6 +170,7 @@ fields:
       Agent's Name:
   - code: |
       agents[i].name_fields()
+  - "Agent date of birth": agents[i].dob
   - "Agent relationship": agents[i].relationship
   - Street address: agents[i].address.address
     address autocomplete: True
@@ -175,14 +178,67 @@ fields:
     required: False
   - City: agents[i].address.city
   - State: agents[i].address.state
-    default: IL      
+    default: DE      
   - ZIP code: agents[i].address.zip
   - "Agent phone number": agents[i].phone_number
     datatype: al_international_phone
 ---
 code: |
   agents[i].phone_number
+
 ---
+id: Alternate Agents
+question: |
+  Use this screen to identify the number of alternate agents, and to provide the agent(s) relationship to the client and their contact information.
+subquestion: |
+  How many alternate agents do you want to designate?
+fields: 
+ - no label: alt_agents.target_number
+   datatype: integer 
+---
+id: alternate agent detail
+sets:
+  - alt_agents[i].name.first
+  - alt_agents[i].name.last
+  - alt_agents[i].name.middle
+  - alt_agents[i].name.suffix
+  - alt_agents[i].address.address
+  - alt_agents[i].address.city
+  - alt_agents[i].address.state
+  - alt_agents[i].address.zip
+question: |
+  Information about your ${ordinal(i)} alt_agent
+fields:  
+  - note: |
+      Agent's Name:
+  - code: |
+      alt_agents[i].name_fields()
+  - "Agent date of birth": alt_agents[i].dob
+  - "Agent relationship": alt_agents[i].relationship
+  - Street address: alt_agents[i].address.address
+    address autocomplete: True
+  - Address line 2: alt_agents[i].address.unit
+    required: False
+  - City: alt_agents[i].address.city
+  - State: alt_agents[i].address.state
+    default: DE      
+  - ZIP code: alt_agents[i].address.zip
+  - "Agent phone number": alt_agents[i].phone_number
+    datatype: al_international_phone
+---
+code: |
+  alt_agents[i].phone_number
+---
+id: Agent's Authority
+question: |
+  I give my Agent the power to make all health-care decisions for me if I cannot make those decisions for myself, subject to the following express authorizations and limitations: 
+subquestion: |
+  Select one (1) of the following options
+fields:
+  - "I give my Agent permission to obtain, examine, and share information about my health needs and health care only when I cannot make decisions for myself, and not at any other time.": healthinfo_restricted
+    datatype: yesno
+  - "I give my Agent permission to obtain, examine, and share information about my health needs and health care at any time, including both when I can and cannot make decisions for myself, as long as my Agent thinks it will help me.": healthinfo_unrestricted
+    datatype: yesno
 ---
 id: End of Life Decisions
 question: |
