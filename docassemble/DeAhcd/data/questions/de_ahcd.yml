@@ -88,7 +88,9 @@ code: |
   users[0].address.address
   agents.gather()
   alt_agents.gather()
-  agents_authority
+  health_info
+  nursing_home
+  psychiatric_facility
   specific_instructions
   set_progress(25)
   anatomicalgifts.research
@@ -231,11 +233,27 @@ code: |
 ---
 id: Agent's Authority
 question: |
-  I give my Agent the power to make all health-care decisions for me if I cannot make those decisions for myself, subject to the following express authorizations and limitations: 
-field: agents_authority
+  General Grant of Authority. I give my Agent the power to make all health-care decisions for me if I cannot make those decisions for myself, subject to the following express authorizations and limitations: 
+field: health_info
 choices:
   - I give my Agent permission to obtain, examine, and share information about my health needs and health care only when I cannot make decisions for myself, and not at any other time.
   - I give my Agent permission to obtain, examine, and share information about my health needs and health care at any time, including both when I can and cannot make decisions for myself, as long as my Agent thinks it will help me.
+---
+id: Agent's Authority
+question: |
+  Nursing Home Adminissions for More than 100 Days.
+field: nursing_home
+choices:
+  - My agent may place me in a nursing home for more than 100 days, even if I object, I am not terminally ill, or my needs can be met somewhere else.
+  - My agent may NOT place me in a nursing home for more than 100 days if I object, I am not terminally ill, or my needs can be met somewhere else.
+---
+id: Agent's Authority
+question: |
+  Admission to Psychiatric Facility
+field: psychiatric_facility
+choices:
+  - My agent may admit me as a voluntary patient to a facility for mental health treatment for the shorter of 72 hours or the number of hours specified here _______. 
+  - My agent may NOT admit me as a voluntary patient to a facility for mental health treatment.
 ---
 id: End of Life Decisions
 question: |
