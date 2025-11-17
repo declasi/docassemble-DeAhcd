@@ -88,7 +88,7 @@ code: |
   users[0].address.address
   agents.gather()
   alt_agents.gather()
-  healthinfo_restricted
+  agents_authority
   specific_instructions
   set_progress(25)
   anatomicalgifts.research
@@ -232,13 +232,10 @@ code: |
 id: Agent's Authority
 question: |
   I give my Agent the power to make all health-care decisions for me if I cannot make those decisions for myself, subject to the following express authorizations and limitations: 
-subquestion: |
-  Select one (1) of the following options
-fields:
-  - "I give my Agent permission to obtain, examine, and share information about my health needs and health care only when I cannot make decisions for myself, and not at any other time.": healthinfo_restricted
-    datatype: yesno
-  - "I give my Agent permission to obtain, examine, and share information about my health needs and health care at any time, including both when I can and cannot make decisions for myself, as long as my Agent thinks it will help me.": healthinfo_unrestricted
-    datatype: yesno
+field: agents_authority
+choices:
+  - I give my Agent permission to obtain, examine, and share information about my health needs and health care only when I cannot make decisions for myself, and not at any other time.
+  - I give my Agent permission to obtain, examine, and share information about my health needs and health care at any time, including both when I can and cannot make decisions for myself, as long as my Agent thinks it will help me.
 ---
 id: End of Life Decisions
 question: |
