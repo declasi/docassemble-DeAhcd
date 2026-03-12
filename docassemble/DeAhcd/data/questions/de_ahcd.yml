@@ -118,6 +118,7 @@ code: |
   users_priorities
   nav.set_section("guardians_and_witnesses")
   witnesses.gather()
+  guardians.gather()
   alternate_agents[1].email
   nav.set_section("agents_and_alternates")
   guardians.address.address
@@ -135,7 +136,6 @@ code: |
   guardians.email
   default_surrogates.name.first
   nav.set_section("agents_and_alternates")
-  guardians.gather()
   set_progress(64)
   exclude_surrogates[2].name.first
   interview_order_de_ahcd = True
