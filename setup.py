@@ -44,17 +44,16 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.DeAhcd',
-      version='1.1.3',
-      description=(''),
-      long_description='# docassemble-DeAhcd',
+      version='1.0',
+      description=('DE AHCD'),
+      long_description='# docassemble.DeAhcd\r\n\r\nDE AHCD\r\n\r\n## Author\r\n\r\nJason Stoehr\r\n\r\n',
       long_description_content_type='text/markdown',
       author='Jason Stoehr',
       author_email='jstoehr@declasi.org',
-      license='',
-      url='https://docassemble.org',
+      license='MIT',
+      url='https://courtformsonline.org',
       packages=find_namespace_packages(),
-      install_requires=[],
+      install_requires=['docassemble.ALWeaver @ git+https://github.com/SuffolkLITLab/docassemble-ALWeaver.git@main', 'docassemble.AssemblyLine @ git+https://github.com/SuffolkLITLab/docassemble-AssemblyLine.git@main'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/DeAhcd/', package='docassemble.DeAhcd'),
      )
-

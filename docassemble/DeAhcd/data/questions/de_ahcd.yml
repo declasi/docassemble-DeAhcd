@@ -1,48 +1,66 @@
+
+
+
+---
+
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
 ---
 metadata:
   title: >-
-    Delaware Advance Health Care Directive
+    DE AHCD
   short title: >-
     DE AHCD
   description: |-
-    This interview helps someone in Delaware get a Delaware Advance Health Care Directive.
+    This interview helps someone in Delaware create an Advance Health Care Directive in Delaware.
   can_I_use_this_form: |
-    If you are a CLASI advocate, you can use this interview to develop an AHCD for your client.
+    If you are a CLASI staff member, you can use this interview to create a draft AHCD for your client.
   before_you_start: |
-    This interview will help you develop a Delaware Advance Health Care Directive for your client.
+    This interview will help you create an Advance Health Care Directive in Delaware.
     
     Before you get started, please gather:
     
-    1. Client contact information
-    2. Agent(s) contact information and relationship to client
+    1. Names and contact information of agents
+    2. 
+    1. 
     
     When you are finished, you will need to:
     
-    1. Download the DOCX form and send to an attorney for review.
+    1. Download the document to review with the client
+    2. Send to an attorney for review
+  when_you_are_finished: |
+  efiling_enabled: False
+  integrated_efiling: False
+  integrated_email_filing: False
+  requires_notarization: False
+  unlisted: False
+  landing_page_url: >-
+    https://courtformsonline.org/
   maturity: production
-  estimated_completion_minutes: 10
+  estimated_completion_minutes: 20
   estimated_completion_delta: 5
-  LIST_topics: 
+  LIST_topics:
     - "ES-05-00-00-00"
     - "HE-00-00-00-00"
+    - "HE-03-00-00-00"
   tags:
     - "ES-05-00-00-00"
     - "HE-00-00-00-00"
+    - "HE-03-00-00-00"
+  # Keep legacy tags behavior for compatibility with downstream tools.
   authors:
     - Jason Stoehr
   original_form: []
-  original_form_published_on: 2025-08-01
+  original_form_published_on: ""
   allowed_courts: []
-  typical_role: "na"
-  al_weaver_version: "1.11.0"
-  generated_on: "2025-08-01"
+  typical_role: "plaintiff"
+  al_weaver_version: "2.1.0"
+  generated_on: "2026-03-09"
   languages:
     - en
-  jurisdiction: NAM-US-US+DE
-  review_date: 2025-08-01
+  jurisdiction: "NAM-US-US+DE"
+  review_date: 2026-03-09
   form_titles:
     - DE AHCD
   form_numbers: []
@@ -60,48 +78,68 @@ code: |
   github_repo_name =  'docassemble-DeAhcd'
 ---
 code: |
-  interview_short_title = "Get a Delaware Advance Health Care Directive"
----
-code: |
   al_form_type = "other_form" 
 ---
 objects:
   - witnesses: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(ask_number=True,target_number=1)
   - agents: ALPeopleList.using(ask_number=True, object_type=ALIndividual, there_are_any=True) 
-  - alt_agents: ALPeopleList.using(ask_number=True, object_type=ALIndividual, there_are_any=True)
+  - alternate_agents: ALPeopleList.using(ask_number=True, object_type=ALIndividual, there_are_any=True)
+  - guardians: ALPeopleList.using(ask_number=True, target_number=1)
+  - default_surrogates: ALPeopleList.using(ask_number=True, target_number=1)
+  - exclude_surrogates: ALPeopleList.using(ask_number=True, object_type=ALIndividual)
 ---
 sections:
+  - screener: Eligibility check
+  - client_info: Client information
+  - agents_and_alternates: Naming agents and alternates
+  - guardians_and_witnesses: Guardians & witnesses
+  - health_preferences: Health care instructions
+  - review_and_signature: Review & signature
   - review_de_ahcd: Review your answers
 ---
-#################### Interview order #####################
 comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_de_ahcd
 code: |
   # Set the allowed courts for this interview
-  nav.set_section("review_de_ahcd")
-  user_role = "na"
-  user_ask_role = "na"
+  user_role = "plaintiff"
+  user_ask_role = "plaintiff"
+  nav.set_section("client_info")
   users.gather()
-  set_parts(subtitle=str(users))
-  users[0].address.address
-  agents.gather()
-  alt_agents.gather()
-  healthinfo_restricted
-  healthinfo_unrestricted
-  nursinghome_yes
-  nursinghome_no
-  psychiatric_yes
-  psychiatric_no
-  specific_instructions
-  set_progress(25)
-  anatomicalgifts.research
-  institutionwitness.name.first
-  witnesses[0].address.address
+  nav.set_section("agents_and_alternates")
+  agents[0].name.first
+  agents[1].name.first
+  alternate_agents[0].name.first
+  alternate_agents[1].name.first
+  set_progress(16)
+  agents_authority
+  nav.set_section("health_preferences")
+  users_priorities
+  nav.set_section("guardians_and_witnesses")
+  witnesses.gather()
+  alternate_agents[1].email
+  nav.set_section("agents_and_alternates")
+  guardians.address.address
+  set_progress(32)
+  exclude_surrogates[1].name.first
+  exclude_surrogates[0].name.first
+  agents[1].email
+  guardians.phone_number
+  alternate_agents[0].email
+  set_progress(48)
+  agents[0].email
+  nav.set_section("health_preferences")
+  hours_psychiatric_facility
+  nav.set_section("guardians_and_witnesses")
+  guardians.email
+  default_surrogates.name.first
+  nav.set_section("agents_and_alternates")
+  guardians.gather()
+  set_progress(64)
+  exclude_surrogates[2].name.first
   interview_order_de_ahcd = True
 ---
-###################### Main order ######################
 comment: |
   This block includes the logic for standalone interviews.
   Delete mandatory: True to include in another interview
@@ -115,7 +153,7 @@ code: |
   store_variables_snapshot(
       persistent=True,
       data={
-          "zip": showifdef("users[0].address.zip"),
+          "zip": showifdef("agents.address.zip"),
           "reached_interview_end": True,
       },
   )
@@ -126,175 +164,187 @@ continue button field: de_ahcd_intro
 question: |
   DE AHCD
 subquestion: |
-  This interview will help you develop a Delaware Advance Health Care Directive for your client.
+  This interview will help you create an Advance Health Care Directive in Delaware.
   
   Before you get started, please gather:
   
-  1. Client contact information
-  2. Agent(s) contact information and relationship to client
+  1. Names and contact information of agents
+  2. 
+  1. 
   
   When you are finished, you will need to:
   
-  1. Download the DOCX form and send to an attorney for review.
+  1. Download the document to review with the client
+  2. Send to an attorney for review
 
-  If you are a CLASI advocate, you can use this interview to develop an AHCD for your client.
 
-  Most people take about 10 minutes to complete this interview.
 ---
 id: Client Information
 question: |
   Client Information
-fields:
-  - "Users.address.address": users.address.address
-  - "Users.name.full": users.name.full
-  - "Users.dob": users.dob
----
-id: Designation of Agents
-question: |
-  Use this screen to identify the number of agents, and to provide the agent(s) relationship to the client and their contact information.
 subquestion: |
-  How many agents do you want to designate?
-fields: 
- - no label: agents.target_number
-   datatype: integer 
+  Please provide name and contact information about the client.
+fields:
+  - "User first name": users.name.first
+  - "User date of birth": users.birthdate
+  - "User address details": users.address.address
+  - "User phone number": users.phone_number
+  - "User email": users.email
 ---
-id: agent detail
-sets:
-  - agents[i].name.first
-  - agents[i].name.last
-  - agents[i].name.middle
-  - agents[i].name.suffix
-  - agents[i].address.address
-  - agents[i].address.city
-  - agents[i].address.state
-  - agents[i].address.zip
+id: Naming the Client s Agent s
 question: |
-  Information about your ${ordinal(i)} agent
-fields:  
-  - note: |
-      Agent's Name:
-  - code: |
-      agents[i].name_fields()
-  - "Agent date of birth": agents[i].dob
-  - "Agent relationship": agents[i].relationship
-  - Street address: agents[i].address.address
-    address autocomplete: True
-  - Address line 2: agents[i].address.unit
-    required: False
-  - City: agents[i].address.city
-  - State: agents[i].address.state
-    default: DE      
-  - ZIP code: agents[i].address.zip
-  - "Agent phone number": agents[i].phone_number
-    datatype: al_international_phone
----
-code: |
-  agents[i].phone_number
-
----
-id: Alternate Agents
-question: |
-  Use this screen to identify the number of alternate agents, and to provide the agent(s) relationship to the client and their contact information.
+  Naming the Client's Agent(s)
 subquestion: |
-  How many alternate agents do you want to designate?
-fields: 
- - no label: alt_agents.target_number
-   datatype: integer 
----
-id: alternate agent detail
-sets:
-  - alt_agents[i].name.first
-  - alt_agents[i].name.last
-  - alt_agents[i].name.middle
-  - alt_agents[i].name.suffix
-  - alt_agents[i].address.address
-  - alt_agents[i].address.city
-  - alt_agents[i].address.state
-  - alt_agents[i].address.zip
-question: |
-  Information about your ${ordinal(i)} alt_agent
-fields:  
-  - note: |
-      Agent's Name:
-  - code: |
-      alt_agents[i].name_fields()
-  - "Agent date of birth": alt_agents[i].dob
-  - "Agent relationship": alt_agents[i].relationship
-  - Street address: alt_agents[i].address.address
-    address autocomplete: True
-  - Address line 2: alt_agents[i].address.unit
-    required: False
-  - City: alt_agents[i].address.city
-  - State: alt_agents[i].address.state
-    default: DE      
-  - ZIP code: alt_agents[i].address.zip
-  - "Agent phone number": alt_agents[i].phone_number
-    datatype: al_international_phone
----
-code: |
-  alt_agents[i].phone_number
----
-id: Agent's Authority
-question: |
-  General Grant of Authority. I give my Agent the power to make all health-care decisions for me if I cannot make those decisions for myself, subject to the following express authorizations and limitations: 
+  List the person(s) the client wants to make health care decisions for them.
 fields:
-  - label: I give my Agent permission to obtain, examine, and share information about my health needs and health care only when I cannot make decisions for myself, and not at any other time.
-    field: healthinfo_restricted
-  - label: I give my Agent permission to obtain, examine, and share information about my health needs and health care at any time, including both when I can and cannot make decisions for myself, as long as my Agent thinks it will help me.
-    field: healthinfo_unrestricted
+  - "Agent[0] first name": agents[0].name.first
+  - "Agent[0] date of birth": agents[0].birthdate
+  - "Agent[0] relationship": agents[0].relationship
+  - "Agent[0] address details": agents[0].address.address
+  - "Agent[0] phone number": agents[0].phone_number
 ---
-id: Agent's Authority
+id: Naming the Client s Second Agent
 question: |
-  Nursing Home Admissions for More than 100 Days.
-fields:
-  - label: My agent may place me in a nursing home for more than 100 days, even if I object, I am not terminally ill, or my needs can be met somewhere else.
-    field: nursinghome_yes
-  - label: My agent may NOT place me in a nursing home for more than 100 days if I object, I am not terminally ill, or my needs can be met somewhere else.
-    field: nursinghome_no
----
-id: Agent's Authority
-question: |
-  Admission to Psychiatric Facility
-fields: 
-   - label: My agent may admit me as a voluntary patient to a facility for mental health treatment for the shorter of 72 hours or the number of hours specified below.
-     field: psychiatric_yes
-   - label: My agent may NOT admit me as a voluntary patient to a facility for mental health treatment.
-     field: psychiatric_no
----
-id: End of Life Decisions
-question: |
-  End of Life Decisions
-fields:
-  - "Specific instructions": specific_instructions
-    datatype: yesno
-  - "Prolong life": prolong_life
-    datatype: yesno
-  - "Not prolong life": not_prolong_life
-    datatype: yesno
-  - "No specific instructions": nospecific_instructions
-    datatype: yesno
-  - "Pain relief": pain_relief
-    datatype: yesno
----
-id: Anatomical Gifts at Death
-question: |
-  Anatomical Gifts at Death
-fields:
-  - "Anatomical gifts - research": anatomicalgifts_research
-    datatype: yesno
-  - "Anatomical gifts - transplantation": anatomicalgifts_transplantation
-  - "Anatomical gifts custom instructions": anatomicalgifts_custom
-    datatype: yesno
-  - "Anatomical gifts any purpose": anatomicalgifts_anypurpose
-    datatype: yesno
----
-id: Witnesses
-question: |
-  Witnesses
+  Naming the Client's Second Agent
 subquestion: |
-  Enter names of witnesses of signature.
+  If the client has a second agent, please provide their details.
 fields:
-  - "Witness name": institutionwitness.name.first
+  - "Agent[1] first name": agents[1].name.first
+  - "Agent[1] date of birth": agents[1].birthdate
+  - "Agent[1] relationship": agents[1].relationship
+  - "Agent[1] address details": agents[1].address.address
+  - "Agent[1] phone number": agents[1].phone_number
+---
+id: Alternate Agent Information
+question: |
+  Alternate Agent Information
+subquestion: |
+  Provide details for the client's alternate agent(s) if the main agent(s) is unavailable.
+fields:
+  - "Alternate agent[0] first name": alternate_agents[0].name.first
+  - "Alternate agent[0] date of birth": alternate_agents[0].birthdate
+  - "Alternate agent[0] relationship": alternate_agents[0].relationship
+  - "Alternate agent[0] address details": alternate_agents[0].address.address
+  - "Alternate agent[0] phone number": alternate_agents[0].phone_number
+---
+id: Details of the Second Alternate Agent
+question: |
+  Details of the Second Alternate Agent
+subquestion: |
+  If the client names a second alternate agent, please provide their details.
+fields:
+  - "Alternate agent[1] first name": alternate_agents[1].name.first
+  - "Alternate agent[1] date of birth": alternate_agents[1].birthdate
+  - "Alternate agent[1] relationship": alternate_agents[1].relationship
+  - "Alternate agent[1] address details": alternate_agents[1].address.address
+  - "Alternate agent[1] phone number": alternate_agents[1].phone_number
+---
+id: Agent Authority and Instructions
+question: |
+  Agent Authority and Instructions
+subquestion: |
+  What authority does the client want to give their agent(s)?
+fields:
+  - "Agent authority details": agents_authority
+  - "Medical treatment instructions": medical_treatment_instructions
+  - "Pain relief instructions": pain_relief_instructions
+  - "Flexible instructions description": flexible_instructions_narrative
+---
+id: Health Care Priorities
+question: |
+  Health Care Priorities
+subquestion: |
+  Share the client's health care goals and wishes.
+fields:
+  - "User health care priorities": users_priorities
+  - "Food instructions": food_instructions
+  - "Body parts not to donate": body_parts_not_donate
+---
+id: Witness Information
+question: |
+  Witness Information
+subquestion: |
+  Provide details about your witness who will sign the document.
+fields:
+  - "Witness first name": witnesses.name.first
+---
+id: Alternate agent 1 email
+question: |
+  Alternate agent[1] email
+fields:
+  - "Alternate agent[1] email": alternate_agents[1].email
+---
+id: Guardian address details
+question: |
+  Guardian address details
+fields:
+  - "Guardian address details": guardians.address.address
+---
+id: Exclude surrogate 1 first name
+question: |
+  Exclude surrogate[1] first name
+fields:
+  - "Exclude surrogate[1] first name": exclude_surrogates[1].name.first
+---
+id: Exclude surrogate 0 first name
+question: |
+  Exclude surrogate[0] first name
+fields:
+  - "Exclude surrogate[0] first name": exclude_surrogates[0].name.first
+---
+id: Agent 1 email
+question: |
+  Agent[1] email
+fields:
+  - "Agent[1] email": agents[1].email
+---
+id: Guardian phone number
+question: |
+  Guardian phone number
+fields:
+  - "Guardian phone number": guardians.phone_number
+---
+id: Alternate agent 0 email
+question: |
+  Alternate agent[0] email
+fields:
+  - "Alternate agent[0] email": alternate_agents[0].email
+---
+id: Agent 0 email
+question: |
+  Agent[0] email
+fields:
+  - "Agent[0] email": agents[0].email
+---
+id: Hours at psychiatric facility
+question: |
+  Hours at psychiatric facility
+fields:
+  - "Hours at psychiatric facility": hours_psychiatric_facility
+---
+id: Guardian email
+question: |
+  Guardian email
+fields:
+  - "Guardian email": guardians.email
+---
+id: Default surrogate first name
+question: |
+  Default surrogate first name
+fields:
+  - "Default surrogate first name": default_surrogates.name.first
+---
+id: Guardian first name
+question: |
+  Guardian first name
+fields:
+  - "Guardian first name": guardians.name.first
+---
+id: Exclude surrogate 2 first name
+question: |
+  Exclude surrogate[2] first name
+fields:
+  - "Exclude surrogate[2] first name": exclude_surrogates[2].name.first
 ---
 id: preview de_ahcd
 question: |
@@ -320,10 +370,22 @@ event: review_de_ahcd
 question: |
   Review your answers
 review:
-  - Edit: specific_instructions
+  - Edit: alternate_agents[1].phone_number
     button: |
-      **Specific instructions**:
-      ${ word(yesno(specific_instructions)) }
+      **Alternate agent's phone number**:
+      ${ alternate_agents[1].phone_number }
+  - Edit: flexible_instructions_narrative
+    button: |
+      **Flexible instructions description**:
+      > ${ single_paragraph(flexible_instructions_narrative) }
+  - Edit: agents[1].birthdate
+    button: |
+      **Agent date of birth**:
+      ${ agents[1].birthdate }
+  - Edit: alternate_agents[1].email
+    button: |
+      **Alternate agent email**:
+      ${ alternate_agents[1].email }
   - Edit: users.revisit
     button: |
       **Users**
@@ -331,50 +393,45 @@ review:
       % for item in users:
         * ${ item }
       % endfor
-  - Edit: institutionwitness.name.first
+  - Edit: guardians.revisit
     button: |
-      **Witness name**:
-      ${ institutionwitness.name.first }
-  - Edit: joint_agents
-    button: |
-      **Joint agents**:
-      ${ word(yesno(joint_agents)) }
-  - Edit: prolong_life
-    button: |
-      **Prolong life**:
-      ${ word(yesno(prolong_life)) }
-  - Edit: not_prolong_life
-    button: |
-      **Not prolong life**:
-      ${ word(yesno(not_prolong_life)) }
-  - Edit: agents.phone_number
-    button: |
-      **agents[0].phone number**:
-      ${ agents[0].phone_number }
-  - Edit: nospecific_instructions
-    button: |
-      **No specific instructions**:
-      ${ word(yesno(nospecific_instructions)) }
-  - Edit: anatomicalgifts.research
-    button: |
-      **Anatomical gifts - research**:
-      ${ word(yesno(anatomicalgifts.research)) }
-  - Edit: single_agent
-    button: |
-      **Single agent**:
-      ${ word(yesno(single_agent)) }
+      **Guardians**
+
+      % for item in guardians:
+        * ${ item }
+      % endfor
   - Edit: agents[0].address.address
     button: |
-      **Agent address**:
+      **Agent address details**:
       ${ agents[0].address.address.block() }
-  - Edit: agents.relationship
+  - Edit: exclude_surrogates[1].name.first
     button: |
-      **Agent relationship**:
-      ${ agents[0].relationship }
-  - Edit: resident_institution
+      **Exclude surrogate first name**:
+      ${ exclude_surrogates[1].name.first }
+  - Edit: alternate_agents[1].relationship
     button: |
-      **Resident institution**:
-      ${ word(yesno(resident_institution)) }
+      **Alternate agent relationship**:
+      ${ alternate_agents[1].relationship }
+  - Edit: exclude_surrogates[0].name.first
+    button: |
+      **Exclude surrogate first name**:
+      ${ exclude_surrogates[0].name.first }
+  - Edit: agents[0].phone_number
+    button: |
+      **Agent phone number**:
+      ${ agents[0].phone_number }
+  - Edit: agents[1].email
+    button: |
+      **Agent email**:
+      ${ agents[1].email }
+  - Edit: alternate_agents[0].email
+    button: |
+      **Alternate agent email**:
+      ${ alternate_agents[0].email }
+  - Edit: agents[1].name.first
+    button: |
+      **Agent first name**:
+      ${ agents[1].name.first }
   - Edit: witnesses.revisit
     button: |
       **Witnesses**
@@ -382,39 +439,104 @@ review:
       % for item in witnesses:
         * ${ item }
       % endfor
-  - Edit: pain_relief
+  - Edit: pain_relief_instructions
     button: |
-      **Pain relief**:
-      ${ word(yesno(pain_relief)) }
-  - Edit: anatomicalgifts.transplantation
+      **Pain relief instructions**:
+      > ${ single_paragraph(pain_relief_instructions) }
+  - Edit: agents[0].email
     button: |
-      **Anatomical gifts - transplantation**:
-      ${ anatomicalgifts.transplantation }
-  - Edit: agents[1].relationship
+      **Agent email**:
+      ${ agents[0].email }
+  - Edit: users_priorities
     button: |
-      **Second Agent relationship**:
-      ${ agents[1].relationship }
-  - Edit: agents[1].name.first
+      **Client health care priorities**:
+      > ${ single_paragraph(users_priorities) }
+  - Edit: agents[0].birthdate
     button: |
-      **Agents First Name**:
-      ${ agents[1].name.first }
-  - Edit: anatomicalgifts.custom
+      **Agent date of birth**:
+      ${ agents[0].birthdate }
+  - Edit: alternate_agents[0].name.first
     button: |
-      **Antomical gifts custom instructions**:
-      ${ word(yesno(anatomicalgifts.custom)) }
-  - Edit: anatomicalgifts.anypurpose
+      **Alternate agent first name**:
+      ${ alternate_agents[0].name.first }
+  - Edit: agents[0].name.first
     button: |
-      **Anatomical gifts any purpose**:
-      ${ word(yesno(anatomicalgifts.anypurpose)) }
-  - Edit: single_agent
+      **Agent first name**:
+      ${ agents[0].name.first }
+  - Edit: medical_treatment_instructions
     button: |
-      **Single agent?**:
-      ${ word(yesno(single_agent)) }
+      **Medical treatment instructions**:
+      > ${ single_paragraph(medical_treatment_instructions) }
+  - Edit: agents[0].relationship
+    button: |
+      **Agent relationship**:
+      ${ agents[0].relationship }
+  - Edit: hours_psychiatric_facility
+    button: |
+      **Hours at psychiatric facility**:
+      ${ hours_psychiatric_facility }
+  - Edit: alternate_agents[0].birthdate
+    button: |
+      **Alternate agent date of birth**:
+      ${ alternate_agents[0].birthdate }
+  - Edit: alternate_agents[1].name.first
+    button: |
+      **Alternate agent first name**:
+      ${ alternate_agents[1].name.first }
   - Edit: agents[1].address.address
     button: |
-      **Agent address**:
+      **Agent[1] address details**:
       ${ agents[1].address.address.block() }
+  - Edit: agents[1].phone_number
+    button: |
+      **Agent[1] phone number**:
+      ${ agents[1].phone_number }
+  - Edit: default_surrogates.name.first
+    button: |
+      **Default surrogate first name**:
+      ${ default_surrogates.name.first }
+  - Edit: agents[1].relationship
+    button: |
+      **Agent[1] relationship**:
+      ${ agents[1].relationship }
+  - Edit: alternate_agents[0].phone_number
+    button: |
+      **Alternate agent[0] phone number**:
+      ${ alternate_agents[0].phone_number }
+  - Edit: alternate_agents[0].relationship
+    button: |
+      **Alternate agent[0] relationship**:
+      ${ alternate_agents[0].relationship }
+  - Edit: alternate_agents[0].address.address
+    button: |
+      **Alternate agent[0] address details**:
+      ${ alternate_agents[0].address.address.block() }
+  - Edit: agents_authority
+    button: |
+      **Agent authority details**:
+      > ${ single_paragraph(agents_authority) }
+  - Edit: body_parts_not_donate
+    button: |
+      **List any body parts client does NOT wish to donate**:
+      > ${ single_paragraph(body_parts_not_donate) }
+  - Edit: alternate_agents[1].birthdate
+    button: |
+      **Alternate agent[1] date of birth**:
+      ${ alternate_agents[1].birthdate }
+  - Edit: food_instructions
+    button: |
+      **Food instructions**:
+      ${ food_instructions }
+  - Edit: exclude_surrogates[2].name.first
+    button: |
+      **Exclude surrogate[2] first name**:
+      ${ exclude_surrogates[2].name.first }
+  - Edit: alternate_agents[1].address.address
+    button: |
+      **Alternate agent[1] address details**:
+      ${ alternate_agents[1].address.address.block() }
 ---
+id: edit users
 continue button field: users.revisit
 question: |
   Edit users
@@ -426,16 +548,54 @@ subquestion: |
 table: users.table
 rows: users
 columns:
+  - Phone number: |
+      row_item.phone_number if defined("row_item.phone_number") else ""
   - Address: |
       row_item.address.block() if defined("row_item.address.address") else ""
   - Name: |
-      row_item.name.full() if defined("row_item.name.first") else ""
+      row_item.name_full() if defined("row_item.name.first") else ""
+  - Email: |
+      row_item.email if defined("row_item.email") else ""
+  - Birthdate: |
+      row_item.birthdate if defined("row_item.birthdate") else ""
+edit:
+  - phone_number
+  - address.address
+  - name.first
+  - email
+  - birthdate
+confirm: True
+
+---
+id: edit guardians
+continue button field: guardians.revisit
+question: |
+  Edit guardians
+subquestion: |
+  ${ guardians.table }
+
+  ${ guardians.add_action() }
+---
+table: guardians.table
+rows: guardians
+columns:
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Phone number: |
+      row_item.phone_number if defined("row_item.phone_number") else ""
+  - Email: |
+      row_item.email if defined("row_item.email") else ""
+  - Name: |
+      row_item.name_full() if defined("row_item.name.first") else ""
 edit:
   - address.address
+  - phone_number
+  - email
   - name.first
 confirm: True
 
 ---
+id: edit witnesses
 continue button field: witnesses.revisit
 question: |
   Edit witnesses
@@ -447,10 +607,10 @@ subquestion: |
 table: witnesses.table
 rows: witnesses
 columns:
-  - Address: |
-      row_item.address.block() if defined("row_item.address.address") else ""
+  - Name: |
+      row_item.name_full() if defined("row_item.name.first") else ""
 edit:
-  - address.address
+  - name.first
 confirm: True
 
 ---
