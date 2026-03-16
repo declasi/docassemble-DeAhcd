@@ -81,11 +81,11 @@ code: |
   al_form_type = "other_form" 
 ---
 objects:
-  - witnesses: ALPeopleList.using(there_are_any=True)
+  - witness: ALIndividual
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - agents: ALPeopleList.using(ask_number=True, object_type=ALIndividual, there_are_any=True) 
-  - alternate_agents: ALPeopleList.using(ask_number=True, object_type=ALIndividual, there_are_any=True)
-  - guardians: ALPeopleList.using(ask_number=True, target_number=1)
+  - agents: ALPeopleList.using(object_type=ALIndividual, there_are_any=True, complete_attribute='complete') 
+  - alternate_agents: ALPeopleList.using(object_type=ALIndividual, there_are_any=True, complete_attribute='complete')
+  - guardian: ALIndividual
   - default_surrogates: ALPeopleList.using(ask_number=True, target_number=1)
   - exclude_surrogates: ALPeopleList.using(ask_number=True, object_type=ALIndividual)
 ---
@@ -108,10 +108,8 @@ code: |
   nav.set_section("client_info")
   users.gather()
   nav.set_section("agents_and_alternates")
-  agents[0].name.first
-  agents[1].name.first
-  alternate_agents[0].name.first
-  alternate_agents[1].name.first
+  agents.gather()
+  alternate_agents.gather()
   set_progress(16)
   agents_authority
   nav.set_section("health_preferences")
@@ -119,17 +117,13 @@ code: |
   nav.set_section("guardians_and_witnesses")
   witnesses.gather()
   guardians.gather()
-  alternate_agents[1].email
   nav.set_section("agents_and_alternates")
   guardians.address.address
   set_progress(32)
   exclude_surrogates[1].name.first
   exclude_surrogates[0].name.first
-  agents[1].email
   guardians.phone_number
-  alternate_agents[0].email
   set_progress(48)
-  agents[0].email
   nav.set_section("health_preferences")
   hours_psychiatric_facility
   nav.set_section("guardians_and_witnesses")
@@ -191,53 +185,106 @@ fields:
   - "User phone number": users.phone_number
   - "User email": users.email
 ---
-id: Naming the Client s Agent s
+code: | 
+  agents[i].name.first
+  agents[i].address.address
+  agents[i].complete=True
+---
+code: |
+  if agents.number_gathered() == 2:
+    agents.there_is_another = False
+---
+id: Naming the Clients Agents
+sets:
+  - agents[i].name.first
+  - agents[i].name.last
+  - agents[i].name.middle
+  - agents[i].name.suffix
+
 question: |
   Naming the Client's Agent(s)
 subquestion: |
   List the person(s) the client wants to make health care decisions for them.
 fields:
-  - "Agent[0] first name": agents[0].name.first
-  - "Agent[0] date of birth": agents[0].birthdate
-  - "Agent[0] relationship": agents[0].relationship
-  - "Agent[0] address details": agents[0].address.address
-  - "Agent[0] phone number": agents[0].phone_number
+  - code: |
+      agents[i].name_fields()
+  - "Agent date of birth": agents[i].birthdate
+    datatype: BirthDate
+    required: false
+  - "Agent relationship": agents[i].relationship
 ---
-id: Naming the Client s Second Agent
+id: Agents Contact Information
+sets: 
+  - agents[i].address.address
 question: |
-  Naming the Client's Second Agent
+  Agent's contact information
 subquestion: |
-  If the client has a second agent, please provide their details.
+  Provide ${ agents[i].name_full() } contact details:
 fields:
-  - "Agent[1] first name": agents[1].name.first
-  - "Agent[1] date of birth": agents[1].birthdate
-  - "Agent[1] relationship": agents[1].relationship
-  - "Agent[1] address details": agents[1].address.address
-  - "Agent[1] phone number": agents[1].phone_number
+  - Street address: agents[i].address.address
+    address autocomplete: True
+  - Address line 2: agents[i].address.unit
+    required: False
+  - City: agents[i].address.city
+  - State: agents[i].address.state
+    code: |
+      states_list() 
+  - ZIP code: agents[i].address.zip
+  - "Agent phone number": agents[i].phone_number
+    datatype: al_international_phone
+  - "Agent email": agents[i].email
+    required: false
 ---
-id: Alternate Agent Information
-question: |
-  Alternate Agent Information
-subquestion: |
-  Provide details for the client's alternate agent(s) if the main agent(s) is unavailable.
-fields:
-  - "Alternate agent[0] first name": alternate_agents[0].name.first
-  - "Alternate agent[0] date of birth": alternate_agents[0].birthdate
-  - "Alternate agent[0] relationship": alternate_agents[0].relationship
-  - "Alternate agent[0] address details": alternate_agents[0].address.address
-  - "Alternate agent[0] phone number": alternate_agents[0].phone_number
+code: | 
+  alternate_agents[i].name.first
+  alternate_agents[i].address.address
+  alternate_agents[i].complete=True
 ---
-id: Details of the Second Alternate Agent
+code: |
+  if alternate_agents.number_gathered() == 2:
+    alternate_agents.there_is_another = False
+---
+id: Naming the Clients Alternate Agents
+sets:
+  - alternate_agents[i].name.first
+  - alternate_agents[i].name.last
+  - alternate_agents[i].name.middle
+  - alternate_agents[i].name.suffix
+
 question: |
-  Details of the Second Alternate Agent
+  Naming the Client's Alternate Agent(s)
 subquestion: |
-  If the client names a second alternate agent, please provide their details.
+  List the person(s) the client wants to make health care decisions for them if their agent(s) are unavailable, unwilling, or unable to act.
 fields:
-  - "Alternate agent[1] first name": alternate_agents[1].name.first
-  - "Alternate agent[1] date of birth": alternate_agents[1].birthdate
-  - "Alternate agent[1] relationship": alternate_agents[1].relationship
-  - "Alternate agent[1] address details": alternate_agents[1].address.address
-  - "Alternate agent[1] phone number": alternate_agents[1].phone_number
+  - code: |
+      alternate_agents[i].name_fields()
+  - "Alternate Agent date of birth": alternate_agents[i].birthdate
+    datatype: BirthDate
+    required: false
+  - "Alternate Agent relationship": alternate_agents[i].relationship
+---
+id: Alternate Agents Contact Information
+sets: 
+  - alternate_agents[i].address.address
+question: |
+  Alternate Agent's contact information
+subquestion: |
+  Provide ${ alternate_agents[i].name.first } contact details:
+fields:
+  - Street address: alternate_agents[i].address.address
+    address autocomplete: True
+  - Address line 2: alternate_agents[i].address.unit
+    required: False
+  - City: alternate_agents[i].address.city
+  - State: alternate_agents[i].address.state
+    code: |
+      states_list() 
+  - ZIP code: alternate_agents[i].address.zip
+  - "Agent phone number": alternate_agents[i].phone_number
+    datatype: al_international_phone
+  - "Agent email": alternate_agents[i].email
+    required: false   
+
 ---
 id: Agent Authority and Instructions
 question: |
