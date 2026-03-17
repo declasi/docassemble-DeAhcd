@@ -109,6 +109,7 @@ code: |
   users.gather()
   nav.set_section("agents_and_alternates")
   agents.gather()
+  agents_independent
   alternate_agents.gather()
   set_progress(16)
   agents_authority
@@ -117,7 +118,6 @@ code: |
   nav.set_section("guardians_and_witnesses")
   witnesses.gather()
   guardians.gather()
-  nav.set_section("agents_and_alternates")
   guardians.address.address
   set_progress(32)
   exclude_surrogates[1].name.first
@@ -171,19 +171,36 @@ subquestion: |
   1. Download the document to review with the client
   2. Send to an attorney for review
 
-
+---
+code: | 
+  users.name.first
+  users.address.address
+  users.complete=True
 ---
 id: Client Information
 question: |
-  Client Information
+  Client Identification
 subquestion: |
-  Please provide name and contact information about the client.
+  Please provide the client's name, date of birth and contact information.
 fields:
-  - "User first name": users.name.first
+  - code: |
+      users.name_fields()
   - "User date of birth": users.birthdate
-  - "User address details": users.address.address
-  - "User phone number": users.phone_number
-  - "User email": users.email
+    datatype: BirthDate
+  - Street address: users.address.address
+    address autocomplete: True
+  - Address line 2: users.address.unit
+    required: False
+  - City: users.address.city
+  - State: users.address.state
+    code: |
+      states_list() 
+  - ZIP code: users.address.zip
+  - "Agent phone number": users.phone_number
+    datatype: al_international_phone
+    required: false
+  - "Agent email": users.email
+    required: false
 ---
 code: | 
   agents[i].name.first
@@ -234,6 +251,15 @@ fields:
     datatype: al_international_phone
   - "Agent email": agents[i].email
     required: false
+
+---
+id: Agents cooperate
+question: |
+  Select how you want your agents to work together
+field: agents_independent
+choices:
+  - "Each of my agents can act independently, with or without consulting each other.": True
+  - "My agents must come to an agreement and make decisions together.": False
 ---
 code: | 
   alternate_agents[i].name.first
