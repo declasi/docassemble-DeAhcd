@@ -1,8 +1,4 @@
 
-
-
----
-
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
@@ -109,8 +105,11 @@ code: |
   users.gather()
   nav.set_section("agents_and_alternates")
   agents.gather()
-  agents_independent
+  if agents.number_gathered() > 1:
+    agents_independent
   alternate_agents.gather()
+  if alternate_agents.number_gathered() > 1:
+    alternate_agents_independent
   set_progress(16)
   agents_authority
   nav.set_section("health_preferences")
@@ -196,10 +195,10 @@ fields:
     code: |
       states_list() 
   - ZIP code: users.address.zip
-  - "Agent phone number": users.phone_number
+  - "Client phone number": users.phone_number
     datatype: al_international_phone
     required: false
-  - "Agent email": users.email
+  - "Client email": users.email
     required: false
 ---
 code: | 
@@ -236,7 +235,7 @@ sets:
 question: |
   Agent's contact information
 subquestion: |
-  Provide ${ agents[i].name_full() } contact details:
+  Provide ${ agents[i].name.first } contact details:
 fields:
   - Street address: agents[i].address.address
     address autocomplete: True
@@ -310,6 +309,14 @@ fields:
     datatype: al_international_phone
   - "Agent email": alternate_agents[i].email
     required: false   
+---
+id: Alternate Agents cooperate
+question: |
+  Select how you want your alternate agents to work together
+field: alternate_agents_independent
+choices:
+  - "Each of my alternate agents can act independently, with or without consulting each other.": True
+  - "My alternate agents must come to an agreement and make decisions together.": False
 
 ---
 id: Agent Authority and Instructions
