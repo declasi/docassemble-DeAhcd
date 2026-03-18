@@ -107,6 +107,7 @@ code: |
   agents.gather()
   if agents.number_gathered() > 1:
     agents_independent
+  designate_alternate_agents
   alternate_agents.gather()
   if alternate_agents.number_gathered() > 1:
     alternate_agents_independent
@@ -259,6 +260,11 @@ field: agents_independent
 choices:
   - "Each of my agents can act independently, with or without consulting each other.": True
   - "My agents must come to an agreement and make decisions together.": False
+---
+id: Alternate agents
+question: |
+  Does the client want to name an alternate agent(s)?
+yesno: designate_alternate_agents
 ---
 code: | 
   alternate_agents[i].name.first
