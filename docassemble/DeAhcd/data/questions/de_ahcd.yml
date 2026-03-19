@@ -82,7 +82,7 @@ objects:
   - agents: ALPeopleList.using(object_type=ALIndividual, there_are_any=True, complete_attribute='complete') 
   - alternate_agents: ALPeopleList.using(object_type=ALIndividual, there_are_any=True, complete_attribute='complete')
   - guardian: ALIndividual
-  - default_surrogates: ALPeopleList.using(ask_number=True, target_number=1)
+  - default_surrogate: ALIndividual
   - exclude_surrogates: ALPeopleList.using(ask_number=True, object_type=ALIndividual)
 ---
 sections:
@@ -112,24 +112,24 @@ code: |
   if alternate_agents.number_gathered() > 1:
     alternate_agents_independent
   set_progress(16)
+  nav.set_section("agents_authority")
+  health_info_incapacitated
+  nursing_home
+  psychiatric_facility
+  hours_psychiatric_facility
   agents_authority
   nav.set_section("health_preferences")
   users_priorities
   nav.set_section("guardians_and_witnesses")
-  witnesses.gather()
-  guardians.gather()
-  guardians.address.address
+  witness.name
+  guardian.name
   set_progress(32)
   exclude_surrogates[1].name.first
   exclude_surrogates[0].name.first
-  guardians.phone_number
   set_progress(48)
   nav.set_section("health_preferences")
-  hours_psychiatric_facility
-  nav.set_section("guardians_and_witnesses")
-  guardians.email
-  default_surrogates.name.first
-  nav.set_section("agents_and_alternates")
+  other_default_surrogate
+  default_surrogate.name
   set_progress(64)
   exclude_surrogates[2].name.first
   interview_order_de_ahcd = True
@@ -325,6 +325,37 @@ choices:
   - "My alternate agents must come to an agreement and make decisions together.": False
 
 ---
+id: Agents Authority Health Info
+question: |
+  Select when the agent(s) can acccess health care information
+field: health_info_incapacitated
+choices:
+  - "I give my agent permission to obtain, examine, and share information about my health needs and health care only when I cannot make decisions for myself, and not at any other time.": True
+  - "I give my agent permission to obtain, examine, and share information about my health needs and health care at any time, including both when I can and cannot make decisions for myself, as long as my agent thinks it will help me.": False
+---
+id: Agents Authority Nursing Home
+question: |
+  Select when the agent(s) can place the client in a nursing home
+field: nursing_home
+choices:
+  - "My agent may place me in a nursing home for more than 100 days, even if: I object, I am not terminally ill, or my needs can be met somewhere else.": True
+  - "My agent may NOT place me in a nursing home for more than 100 days if: I object, I am not terminally ill, or my needs can be met somewhere else.": False
+---
+id: Agents Authority Phychiatric Facility
+question: |
+  Select whether the agent(s) can place the client in a psychiatric facility
+field: psychiatric_facility
+choices:
+  - "My agent may admit me as a voluntary patient to a facility for mental health treatment for the shorter of 72 hours or the number of hours specified here:": True
+  - "My agent may NOT admit me as a voluntary patient to a facility for mental health treatment.": False
+---
+id: Hours at psychiatric facility
+question: |
+   Specify the number of hours the client can be placed in a psychiatric facility
+field: hours_psychiatric_facility
+datatype: integer
+ 
+---
 id: Agent Authority and Instructions
 question: |
   Agent Authority and Instructions
@@ -353,18 +384,13 @@ subquestion: |
   Provide details about your witness who will sign the document.
 fields:
   - "Witness first name": witnesses.name.first
----
-id: Alternate agent 1 email
-question: |
-  Alternate agent[1] email
-fields:
-  - "Alternate agent[1] email": alternate_agents[1].email
+
 ---
 id: Guardian address details
 question: |
   Guardian address details
 fields:
-  - "Guardian address details": guardians.address.address
+  - "Guardian address details": guardian.address.address
 ---
 id: Exclude surrogate 1 first name
 question: |
@@ -377,36 +403,15 @@ question: |
   Exclude surrogate[0] first name
 fields:
   - "Exclude surrogate[0] first name": exclude_surrogates[0].name.first
----
-id: Agent 1 email
-question: |
-  Agent[1] email
-fields:
-  - "Agent[1] email": agents[1].email
+
 ---
 id: Guardian phone number
 question: |
   Guardian phone number
 fields:
   - "Guardian phone number": guardians.phone_number
----
-id: Alternate agent 0 email
-question: |
-  Alternate agent[0] email
-fields:
-  - "Alternate agent[0] email": alternate_agents[0].email
----
-id: Agent 0 email
-question: |
-  Agent[0] email
-fields:
-  - "Agent[0] email": agents[0].email
----
-id: Hours at psychiatric facility
-question: |
-  Hours at psychiatric facility
-fields:
-  - "Hours at psychiatric facility": hours_psychiatric_facility
+
+
 ---
 id: Guardian email
 question: |
@@ -414,11 +419,16 @@ question: |
 fields:
   - "Guardian email": guardians.email
 ---
-id: Default surrogate first name
+id: Other Default Surrogate
 question: |
-  Default surrogate first name
+  Does the client want to name an a different default surrogate for health care decision-making?
+yesno: other_default_surrogate
+---
+id: Default surrogate name
+question: |
+  Default surrogate name
 fields:
-  - "Default surrogate first name": default_surrogates.name.first
+  - "Default surrogate first name": default_surrogates.name
 ---
 id: Guardian first name
 question: |
