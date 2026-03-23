@@ -78,7 +78,7 @@ code: |
 ---
 objects:
   - witness: ALIndividual
-  - users: ALPeopleList.using(ask_number=True,target_number=1)
+  - users: ALIndividual
   - agents: ALPeopleList.using(object_type=ALIndividual, there_are_any=True, complete_attribute='complete') 
   - alternate_agents: ALPeopleList.using(object_type=ALIndividual, there_are_any=True, complete_attribute='complete')
   - guardian: ALIndividual
@@ -102,7 +102,7 @@ code: |
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
   nav.set_section("client_info")
-  users.gather()
+  users.name.first
   nav.set_section("agents_and_alternates")
   agents.gather()
   if agents.number_gathered() > 1:
@@ -118,11 +118,16 @@ code: |
   psychiatric_facility
   hours_psychiatric_facility
   agents_authority
-  nav.set_section("health_preferences")
+  nav.set_section("health_care_instructions")
+  is_medical_treatment_always
+  nav.set_section("user_priorities")
   users_priorities
   nav.set_section("guardians_and_witnesses")
-  witness.name
-  guardian.name
+  witness.name.first
+  if ask_guardian: 
+    guardian.name.first
+    guardian.address.address
+    guardian.phone_number
   set_progress(32)
   exclude_surrogates[1].name.first
   exclude_surrogates[0].name.first
@@ -178,6 +183,11 @@ code: |
   users.complete=True
 ---
 id: Client Information
+sets: 
+  - users.name.first
+  - users.name.last
+  - users.name.middle
+  - users.name.suffix
 question: |
   Client Identification
 subquestion: |
@@ -367,6 +377,35 @@ fields:
   - "Pain relief instructions": pain_relief_instructions
   - "Flexible instructions description": flexible_instructions_narrative
 ---
+###### Part C Health Care Information Fields #######
+id: Treatment
+question: |
+  Treatment 
+subquestion: |
+  Medical treatment needed to keep me alive, but not needed for comfort or any other purpose (for example: mechanical respiration, dialysis, surgery, blood transfusion, chemotherapy/radiation treatment), should… (mark all that apply):
+fields: 
+  - "Always be given to me. (If you mark this choice, you should not mark other choices in this “treatment” section).": is_medical_treatment_always
+    datatype: yesnowide
+  - note: |
+      **If you mark this choice, you should NOT mark other choices in this “treatment” section**
+    show if: is_medical_treatment_always
+  - "Not be given to me if I have a terminal illness (a condition that is not curable and is expected to cause my death soon, even if treated).": is_medical_treatment_terminal_illness
+    datatype: yesnowide
+  - "Not be given to me if I am permanently unconscious (unconscious and I am not expected to be conscious again).": is_medical_treatment_permanently_unconcious
+    datatype: yesnowide
+  - "Not be given to me if I have a medical condition from which I am not expected to recover that prevents me from communicating with people I care about and recognizing family and friends.": is_medical_treatment_no_recovery 
+    datatype: yesnowide
+  - "Other (write what you want or do not want)": is_medical_treatment_other
+    datatype: yesnowide
+  - "Describe other treatment": medical_treatment_instructions
+    datatype: area
+    rows: 2
+    show if: is_medical_treatment_other
+validation code: |
+  if is_medical_treatment_always and not (is_medical_treatment_terminal_illness or is_medical_treatment_permanently_unconcious or is_medical_treatment_no_recovery or is_medical_treatment_other):
+    validation_error("You cannot mark other choices in this Treatment section.")
+
+---
 id: Health Care Priorities
 question: |
   Health Care Priorities
@@ -377,20 +416,61 @@ fields:
   - "Food instructions": food_instructions
   - "Body parts not to donate": body_parts_not_donate
 ---
+##### WITNESS SECTION ########
 id: Witness Information
+sets:
+  - witness.name.first
+  - witness.name.last
+  - witness.name.middle
+  - witness.name.suffix
 question: |
   Witness Information
 subquestion: |
   Provide details about your witness who will sign the document.
 fields:
-  - "Witness first name": witnesses.name.first
-
+  - code: |
+     witness.name_fields()
 ---
-id: Guardian address details
+##### GUARIDAN SECTION ########
+id: ask guardian
 question: |
-  Guardian address details
+  Do you have a guardian?
 fields:
-  - "Guardian address details": guardian.address.address
+  - no label: ask_guardian
+    datatype: yesnoradio
+---
+id: Guardian name
+sets:
+  - guardian.name.first
+  - guardian.name.last
+  - guardian.name.middle
+  - guardian.name.suffix
+question: |
+  Guardian name
+fields:
+  - code: |
+     guardian.name_fields()
+---
+id: Guardian contact information
+sets: 
+  - guardian.address.address
+question: |
+  Guardian's contact information
+subquestion: |
+  Provide ${ guardian.name.first }'s contact details:
+fields:
+  - Street address: guardian.address.address
+    address autocomplete: True
+  - Address line 2: guardian.address.unit
+    required: False
+  - City: guardian.address.city
+  - State: guardian.address.state
+    code: |
+      states_list() 
+  - ZIP code: guardian.address.zip
+  - "Guardian phone number": guardian.phone_number
+    datatype: al_international_phone
+  - "Guardian email": guardian.email
 ---
 id: Exclude surrogate 1 first name
 question: |
@@ -405,20 +485,6 @@ fields:
   - "Exclude surrogate[0] first name": exclude_surrogates[0].name.first
 
 ---
-id: Guardian phone number
-question: |
-  Guardian phone number
-fields:
-  - "Guardian phone number": guardians.phone_number
-
-
----
-id: Guardian email
-question: |
-  Guardian email
-fields:
-  - "Guardian email": guardians.email
----
 id: Other Default Surrogate
 question: |
   Does the client want to name an a different default surrogate for health care decision-making?
@@ -429,12 +495,7 @@ question: |
   Default surrogate name
 fields:
   - "Default surrogate first name": default_surrogates.name
----
-id: Guardian first name
-question: |
-  Guardian first name
-fields:
-  - "Guardian first name": guardians.name.first
+
 ---
 id: Exclude surrogate 2 first name
 question: |
