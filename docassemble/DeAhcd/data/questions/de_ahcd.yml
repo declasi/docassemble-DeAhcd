@@ -108,7 +108,8 @@ code: |
   if agents.number_gathered() > 1:
     agents_independent
   designate_alternate_agents
-  alternate_agents.gather()
+  if designate_alternate_agents == True:
+    alternate_agents.gather()
   if alternate_agents.number_gathered() > 1:
     alternate_agents_independent
   set_progress(16)
@@ -116,12 +117,18 @@ code: |
   health_info_incapacitated
   nursing_home
   psychiatric_facility
-  hours_psychiatric_facility
+  if psychiatric_facility == True:
+    hours_psychiatric_facility  
   agents_authority
   nav.set_section("health_care_instructions")
-  is_medical_treatment_always
+  medical_treatment_always
+  food_always
+  pain_relief_always
   nav.set_section("user_priorities")
   users_priorities
+  nav.set_section("other_guidance")
+  specific_instructions
+  flexible_instructions_narrative
   nav.set_section("guardians_and_witnesses")
   witness.name.first
   if ask_guardian: 
@@ -177,6 +184,7 @@ subquestion: |
   2. Send to an attorney for review
 
 ---
+################ CLIENT INFO ############################
 code: | 
   users.name.first
   users.address.address
@@ -212,6 +220,8 @@ fields:
   - "Client email": users.email
     required: false
 ---
+################################## PART A NAMING AGENTS AND ALTERNATE AGENTS #####################
+####################### AGENTS INFO ##########################
 code: | 
   agents[i].name.first
   agents[i].address.address
@@ -271,6 +281,7 @@ choices:
   - "Each of my agents can act independently, with or without consulting each other.": True
   - "My agents must come to an agreement and make decisions together.": False
 ---
+################### ALTERNATE AGENT INFO #####################
 id: Alternate agents
 question: |
   Does the client want to name an alternate agent(s)?
@@ -335,6 +346,7 @@ choices:
   - "My alternate agents must come to an agreement and make decisions together.": False
 
 ---
+###################### PART B AGENT'S AUTHORITY ###############################
 id: Agents Authority Health Info
 question: |
   Select when the agent(s) can acccess health care information
@@ -362,59 +374,140 @@ choices:
 id: Hours at psychiatric facility
 question: |
    Specify the number of hours the client can be placed in a psychiatric facility
-field: hours_psychiatric_facility
-datatype: integer
- 
+fields: 
+  - Hours in psychiatric facility: hours_psychiatric_facility
+    datatype: integer
 ---
-id: Agent Authority and Instructions
+id: Agents Authority Other
 question: |
-  Agent Authority and Instructions
-subquestion: |
-  What authority does the client want to give their agent(s)?
+  Other Limitations on Agent’s Authority
 fields:
-  - "Agent authority details": agents_authority
-  - "Medical treatment instructions": medical_treatment_instructions
-  - "Pain relief instructions": pain_relief_instructions
-  - "Flexible instructions description": flexible_instructions_narrative
+  - "Describe other limitations the client would like to place on their agent's authority": agents_authority
+    datatype: area
+    rows: 2
+    required: false
 ---
-###### Part C Health Care Information Fields #######
+######################## Part C Health Care Information Section ########################
+####### TREATMENT ####################
 id: Treatment
 question: |
   Treatment 
 subquestion: |
   Medical treatment needed to keep me alive, but not needed for comfort or any other purpose (for example: mechanical respiration, dialysis, surgery, blood transfusion, chemotherapy/radiation treatment), should… (mark all that apply):
 fields: 
-  - "Always be given to me. (If you mark this choice, you should not mark other choices in this “treatment” section).": is_medical_treatment_always
+  - "Always be given to me. (If you mark this choice, you should not mark other choices in this “treatment” section).": medical_treatment_always
     datatype: yesnowide
   - note: |
       **If you mark this choice, you should NOT mark other choices in this “treatment” section**
-    show if: is_medical_treatment_always
-  - "Not be given to me if I have a terminal illness (a condition that is not curable and is expected to cause my death soon, even if treated).": is_medical_treatment_terminal_illness
+    show if: medical_treatment_always
+  - "Not be given to me if I have a terminal illness (a condition that is not curable and is expected to cause my death soon, even if treated).": medical_treatment_terminal_illness
     datatype: yesnowide
-  - "Not be given to me if I am permanently unconscious (unconscious and I am not expected to be conscious again).": is_medical_treatment_permanently_unconcious
+  - "Not be given to me if I am permanently unconscious (unconscious and I am not expected to be conscious again).": medical_treatment_permanently_unconcious
     datatype: yesnowide
-  - "Not be given to me if I have a medical condition from which I am not expected to recover that prevents me from communicating with people I care about and recognizing family and friends.": is_medical_treatment_no_recovery 
+  - "Not be given to me if I have a medical condition from which I am not expected to recover that prevents me from communicating with people I care about and recognizing family and friends.": medical_treatment_no_recovery 
     datatype: yesnowide
-  - "Other (write what you want or do not want)": is_medical_treatment_other
+  - "Other (write what you want or do not want)": medical_treatment_other
     datatype: yesnowide
   - "Describe other treatment": medical_treatment_instructions
     datatype: area
     rows: 2
-    show if: is_medical_treatment_other
+    show if: medical_treatment_other
 validation code: |
-  if is_medical_treatment_always and not (is_medical_treatment_terminal_illness or is_medical_treatment_permanently_unconcious or is_medical_treatment_no_recovery or is_medical_treatment_other):
+  if medical_treatment_always and (medical_treatment_terminal_illness or medical_treatment_permanently_unconcious or medical_treatment_no_recovery or medical_treatment_other):
     validation_error("You cannot mark other choices in this Treatment section.")
-
 ---
+########## FOOD AND LIQUIDS ####################
+id: Food and liquids
+question: |
+  Food and Liquids 
+subquestion: |
+  If I can’t swallow and staying alive requires me to get food or liquids through a tube or other means for the rest of my life, then food or liquids should… (mark all that apply):
+fields: 
+  - "Always be given to me. (If you mark this choice, you should not mark other choices in this “treatment” section).": food_always
+    datatype: yesnowide
+  - note: |
+      **If you mark this choice, you should NOT mark other choices in this “food and liquids” section**
+    show if: food_always
+  - "Not be given to me if I have a terminal illness (a condition that is not curable and is expected to cause my death soon, even if treated).": food_terminal_illness
+    datatype: yesnowide
+  - "Not be given to me if I am permanently unconscious (unconscious and I am not expected to be conscious again).": food_permanently_unconcious
+    datatype: yesnowide
+  - "Not be given to me if I have a medical condition from which I am not expected to recover that prevents me from communicating with people I care about and recognizing family and friends.": food_no_recovery 
+    datatype: yesnowide
+  - "Other (write what you want or do not want)": food_other
+    datatype: yesnowide
+  - "Describe other treatment": food_instructions
+    datatype: area
+    rows: 2
+    show if: food_other
+validation code: |
+  if food_always and (food_terminal_illness or food_permanently_unconcious or food_no_recovery or food_other):
+    validation_error("You cannot mark other choices in this Food and Liquids section.")
+---
+########## PAIN RELIEF ####################
+id: Pain Relief
+question: |
+  Pain Relief 
+subquestion: |
+  If I am in significant pain, care that will keep me comfortable but is likely to shorten my life should… (mark all that apply):
+fields: 
+  - "Always be given to me. (If you mark this choice, you should not mark other choices in this “Pain Relief” section).": pain_relief_always
+    datatype: yesnowide
+  - note: |
+      **If you mark this choice, you should NOT mark other choices in this “Pain Relief” section**
+    show if: pain_relief_always
+  - "Never be given to me. (If you mark this choice, you should not mark other choices in this “Pain Relief” section).": pain_relief_never
+    datatype: yesnowide
+  - note: |
+      **If you mark this choice, you should NOT mark other choices in this “Pain Relief” section**
+    show if: pain_relief_never
+  - "Be given to me if I have a terminal illness (a condition that is not curable and is expected to cause my death soon, even if treated).": pain_relief_terminal_illness
+    datatype: yesnowide
+  - "Be given to me if I am permanently unconscious (unconscious and I am not expected to be conscious again).": pain_relief_permanently_unconcious
+    datatype: yesnowide
+  - "Be given to me if I have a medical condition from which I am not expected to recover that prevents me from communicating with people I care about and recognizing family and friends.": pain_relief_no_recovery 
+    datatype: yesnowide
+  - "Other (write what you want or do not want)": pain_relief_other
+    datatype: yesnowide
+  - "Describe other treatment": pain_relief_instructions
+    datatype: area
+    rows: 2
+    show if: pain_relief_other
+validation code: |
+  if pain_relief_always and (pain_relief_never or pain_relief_terminal_illness or pain_relief_permanently_unconcious or pain_relief_no_recovery or pain_relief_other) or pain_relief_never and (pain_relief_always or pain_relief_terminal_illness or pain_relief_permanently_unconcious or pain_relief_no_recovery or pain_relief_other):
+    validation_error("You cannot mark other choices in this Pain Relief section.")
+---
+################ HEALTH CARE PRIORITIES ####################
 id: Health Care Priorities
 question: |
   Health Care Priorities
 subquestion: |
-  Share the client's health care goals and wishes.
+  You can use this section to indicate what is important to you, and what is not important to you. This information can help your agent make decisions for you if you cannot. It also helps others understand your preferences. For example, you could include more information about your goals, values, and preferences for treatment, including care you want or do not want. You can also use this section to name anyone who you do NOT want to make decisions for you under any conditions.
 fields:
   - "User health care priorities": users_priorities
-  - "Food instructions": food_instructions
+    datatype: area
+    rows: 4
   - "Body parts not to donate": body_parts_not_donate
+---
+############## PART E: OTHER GUIDANCE ###########################
+id: Flexibility for Agent
+question: |
+  Flexibility for My Agent
+subquestion: |
+  Select one (1) of the following options
+field: specific_instructions
+choices:
+  - "My agent must follow the instructions in this document, even if my agent thinks something else would be better for me.": True 
+  - "I give my agent permission to be flexible in applying these instructions if my agent thinks it would be in my best interest based on what my agent knows about me.": False
+---
+id: Flexible Instructions Narrative
+question: |
+  This flexibility does not apply to the following
+fields:
+  - Instructions: flexible_instructions_narrative
+    datatype: area
+    rows: 2
+
 ---
 ##### WITNESS SECTION ########
 id: Witness Information
