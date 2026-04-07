@@ -83,7 +83,7 @@ objects:
   - alternate_agents: ALPeopleList.using(object_type=ALIndividual, there_are_any=True, complete_attribute='complete')
   - guardian: ALIndividual
   - default_surrogate: ALIndividual
-  - exclude_surrogates: ALPeopleList.using(ask_number=True, object_type=ALIndividual)
+  - exclude_surrogates: ALPeopleList.using(object_type=ALIndividual, there_are_any=True, complete_attribute='complete')
 ---
 sections:
   - screener: Eligibility check
@@ -94,6 +94,7 @@ sections:
   - review_and_signature: Review & signature
   - review_de_ahcd: Review your answers
 ---
+################# INTERVIEW ORDER #################################
 comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_de_ahcd
@@ -119,7 +120,7 @@ code: |
   psychiatric_facility
   if psychiatric_facility == True:
     hours_psychiatric_facility  
-  agents_authority
+  agents_authority_limits
   nav.set_section("health_care_instructions")
   medical_treatment_always
   food_always
@@ -128,22 +129,21 @@ code: |
   users_priorities
   nav.set_section("other_guidance")
   specific_instructions
-  flexible_instructions_narrative
+  if specific_instructions == False:
+    flexible_instructions_narrative
   nav.set_section("guardians_and_witnesses")
-  witness.name.first
-  if ask_guardian: 
+  if agent_guardian == False:
     guardian.name.first
     guardian.address.address
     guardian.phone_number
   set_progress(32)
-  exclude_surrogates[1].name.first
-  exclude_surrogates[0].name.first
-  set_progress(48)
-  nav.set_section("health_preferences")
-  other_default_surrogate
-  default_surrogate.name
-  set_progress(64)
-  exclude_surrogates[2].name.first
+  agent_surrogate
+  if agent_surrogate == False:
+    default_surrogate.name.first
+  exclude_default_surrogates
+  if exclude_default_surrogates == True:
+    exclude_surrogates.gather()
+  witness.name.first
   interview_order_de_ahcd = True
 ---
 comment: |
@@ -382,7 +382,7 @@ id: Agents Authority Other
 question: |
   Other Limitations on Agent’s Authority
 fields:
-  - "Describe other limitations the client would like to place on their agent's authority": agents_authority
+  - "Describe other limitations the client would like to place on their agent's authority": agents_authority_limits
     datatype: area
     rows: 2
     required: false
@@ -416,7 +416,7 @@ validation code: |
   if medical_treatment_always and (medical_treatment_terminal_illness or medical_treatment_permanently_unconcious or medical_treatment_no_recovery or medical_treatment_other):
     validation_error("You cannot mark other choices in this Treatment section.")
 ---
-########## FOOD AND LIQUIDS ####################
+################## FOOD AND LIQUIDS ##################
 id: Food and liquids
 question: |
   Food and Liquids 
@@ -502,35 +502,22 @@ choices:
 ---
 id: Flexible Instructions Narrative
 question: |
-  This flexibility does not apply to the following
+  The agent's flexibility in applying the instructions does not apply to the following
 fields:
-  - Instructions: flexible_instructions_narrative
+  - Limits in agent's flexibility: flexible_instructions_narrative
     datatype: area
     rows: 2
-
 ---
-##### WITNESS SECTION ########
-id: Witness Information
-sets:
-  - witness.name.first
-  - witness.name.last
-  - witness.name.middle
-  - witness.name.suffix
+##### Nomination of Guardian ########
+id: name guardian
 question: |
-  Witness Information
+  You can say who you would want as your guardian if you needed one. A guardian is a person named by a court to make decisions for someone who cannot make decisions. Filling this out does not mean that you want or need a guardian. There is no guarantee that the court would appoint the person you want as guardian.
 subquestion: |
-  Provide details about your witness who will sign the document.
-fields:
-  - code: |
-     witness.name_fields()
----
-##### GUARIDAN SECTION ########
-id: ask guardian
-question: |
-  Do you have a guardian?
-fields:
-  - no label: ask_guardian
-    datatype: yesnoradio
+  If a court appoints a guardian to make personal decisions for me, I want the court to choose:
+field: agent_guardian
+choices: 
+  - "My agent named in this form. If my agent cannot be a guardian, I want the alternate agent named in this form, if applicable": True
+  - "Other (provide who you would want and their contaction information on the following screens)": False
 ---
 id: Guardian name
 sets:
@@ -565,36 +552,63 @@ fields:
     datatype: al_international_phone
   - "Guardian email": guardian.email
 ---
-id: Exclude surrogate 1 first name
-question: |
-  Exclude surrogate[1] first name
-fields:
-  - "Exclude surrogate[1] first name": exclude_surrogates[1].name.first
----
-id: Exclude surrogate 0 first name
-question: |
-  Exclude surrogate[0] first name
-fields:
-  - "Exclude surrogate[0] first name": exclude_surrogates[0].name.first
-
----
-id: Other Default Surrogate
+########### DEFAULT SURROGATE INFORMATION #############
+id: Naming default surrogate
 question: |
   Does the client want to name an a different default surrogate for health care decision-making?
-yesno: other_default_surrogate
+field: agent_surrogate
+choices:
+  - "I wish for my agent or, if applicable, my alternate agent, to be my default surrogate for health care decision-making for any decisions not authorized by this document": True
+  - "I wish to name a different person listed here": False
 ---
 id: Default surrogate name
+sets:
+  - default_surrogate.name.first
+  - default_surrogate.name.last
+  - default_surrogate.name.middle
+  - default_surrogate.name.suffix
 question: |
-  Default surrogate name
+  Provide the name of your Default Surrogate
 fields:
-  - "Default surrogate first name": default_surrogates.name
+  - code: |
+     default_surrogate.name_fields()
+---
+id: Exclude surrogates
+question: |
+  Do you wish to exclude anyone as your default surrogate?
+yesno: exclude_default_surrogates
 
 ---
-id: Exclude surrogate 2 first name
+code: | 
+  exclude_surrogates[i].name.first
+  exclude_surrogates[i].complete=True
+---
+id: Naming the excluded surrogates
+sets:
+  - exclude_surrogates[i].name.first
+  - exclude_surrogates[i].name.last
+  - exclude_surrogates[i].name.middle
+  - exclude_surrogates[i].name.suffix
 question: |
-  Exclude surrogate[2] first name
+  Name the person(s) you wish to exclude as your default surrogates
 fields:
-  - "Exclude surrogate[2] first name": exclude_surrogates[2].name.first
+  - code: |
+      exclude_surrogates[i].name_fields()      
+---
+##### WITNESS SECTION ########
+id: Witness Information
+sets:
+  - witness.name.first
+  - witness.name.last
+  - witness.name.middle
+  - witness.name.suffix
+question: |
+  Witness Information
+subquestion: |
+  Provide details about your witness who will sign the document.
+fields:
+  - code: |
+     witness.name_fields()
 ---
 id: preview de_ahcd
 question: |
