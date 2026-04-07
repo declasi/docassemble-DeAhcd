@@ -104,6 +104,7 @@ code: |
   user_ask_role = "plaintiff"
   nav.set_section("client_info")
   users.name.first
+  donate_organs
   nav.set_section("agents_and_alternates")
   agents.gather()
   if agents.number_gathered() > 1:
@@ -143,6 +144,10 @@ code: |
   exclude_default_surrogates
   if exclude_default_surrogates == True:
     exclude_surrogates.gather()
+  donate_organs
+  if donate_organs == True:
+    body_parts_not_donate
+    donation_transplant
   witness.name.first
   interview_order_de_ahcd = True
 ---
@@ -487,7 +492,6 @@ fields:
   - "User health care priorities": users_priorities
     datatype: area
     rows: 4
-  - "Body parts not to donate": body_parts_not_donate
 ---
 ############## PART E: OTHER GUIDANCE ###########################
 id: Flexibility for Agent
@@ -511,13 +515,13 @@ fields:
 ##### Nomination of Guardian ########
 id: name guardian
 question: |
-  You can say who you would want as your guardian if you needed one. A guardian is a person named by a court to make decisions for someone who cannot make decisions. Filling this out does not mean that you want or need a guardian. There is no guarantee that the court would appoint the person you want as guardian.
-subquestion: |
   If a court appoints a guardian to make personal decisions for me, I want the court to choose:
 field: agent_guardian
 choices: 
   - "My agent named in this form. If my agent cannot be a guardian, I want the alternate agent named in this form, if applicable": True
   - "Other (provide who you would want and their contaction information on the following screens)": False
+pre: |
+  You can say who you would want as your guardian if you needed one. A guardian is a person named by a court to make decisions for someone who cannot make decisions. Filling this out does not mean that you want or need a guardian. There is no guarantee that the court would appoint the person you want as guardian.
 ---
 id: Guardian name
 sets:
@@ -555,7 +559,7 @@ fields:
 ########### DEFAULT SURROGATE INFORMATION #############
 id: Naming default surrogate
 question: |
-  Does the client want to name an a different default surrogate for health care decision-making?
+  Does you want to name an a different default surrogate for health care decision-making?
 field: agent_surrogate
 choices:
   - "I wish for my agent or, if applicable, my alternate agent, to be my default surrogate for health care decision-making for any decisions not authorized by this document": True
@@ -577,7 +581,6 @@ id: Exclude surrogates
 question: |
   Do you wish to exclude anyone as your default surrogate?
 yesno: exclude_default_surrogates
-
 ---
 code: | 
   exclude_surrogates[i].name.first
@@ -593,7 +596,43 @@ question: |
   Name the person(s) you wish to exclude as your default surrogates
 fields:
   - code: |
-      exclude_surrogates[i].name_fields()      
+      exclude_surrogates[i].name_fields() 
+---
+################## ORGAN DONATION SECTION ####################
+id: Organ donation
+question: |
+  Select whether you wish to donate your organs.
+field: donate_organs
+choices:
+  - "I donate my organs, tissues, and other body parts after I die, except those listed below, even if it requires maintaining treatments that conflict with other instructions I have put in this form.": True
+  - "I do not want my organs, tissues, or other body parts donated to anybody for any reason.": False
+pre: |
+  This part lets you donate your organs after you die. You may have already indicated a decision on your driver’s license, identification card, or in another registry. Leave this “donation” section blank if you do not want to include your decision here.
+---
+id: Body parts not donate
+question: List any body parts you do NOT want to donate
+fields:
+  - no label: body_parts_not_donate
+    datatype: area
+    rows: 2
+    required: false
+---
+id: Purpose of donation
+question: |
+  Select the desired purpose of your organ donation.
+subquestion: |
+  You may mark all that apply. (If you do not mark any of the purposes below, your donation can be used for all of them.)
+fields:
+  - "Transplant": donation_transplant
+    datatype: yesno
+  - "Therapy": donation_therapy
+    datatype: yesno
+  - "Research": donation_research
+    datatype: yesno
+  - "Education": donation_education
+    datatype: yesno
+  - "All of the above": donation_all_reasons
+    datatype: yesno
 ---
 ##### WITNESS SECTION ########
 id: Witness Information
