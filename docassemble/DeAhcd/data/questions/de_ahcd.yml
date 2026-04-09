@@ -77,7 +77,7 @@ code: |
   al_form_type = "other_form" 
 ---
 objects:
-  - witness: ALIndividual
+  - witnesses: ALIndividual
   - users: ALIndividual
   - agents: ALPeopleList.using(object_type=ALIndividual, there_are_any=True, complete_attribute='complete') 
   - alternate_agents: ALPeopleList.using(object_type=ALIndividual, there_are_any=True, complete_attribute='complete')
@@ -104,7 +104,6 @@ code: |
   user_ask_role = "plaintiff"
   nav.set_section("client_info")
   users.name.first
-  donate_organs
   nav.set_section("agents_and_alternates")
   agents.gather()
   if agents.number_gathered() > 1:
@@ -132,7 +131,7 @@ code: |
   specific_instructions
   if specific_instructions == False:
     flexible_instructions_narrative
-  nav.set_section("guardians_and_witnesses")
+  nav.set_section("guardians_and_surrogates")
   if agent_guardian == False:
     guardian.name.first
     guardian.address.address
@@ -144,11 +143,13 @@ code: |
   exclude_default_surrogates
   if exclude_default_surrogates == True:
     exclude_surrogates.gather()
+  nav.set_section("organ_donation")
   donate_organs
   if donate_organs == True:
     body_parts_not_donate
     donation_transplant
-  witness.name.first
+  nav.set_section("witness")
+  witnesses.name.first
   interview_order_de_ahcd = True
 ---
 comment: |
@@ -276,7 +277,10 @@ fields:
     datatype: al_international_phone
   - "Agent email": agents[i].email
     required: false
-
+---
+code: |
+  is_agents_independent = True
+  is_agents_together = False
 ---
 id: Agents cooperate
 question: |
@@ -392,8 +396,8 @@ fields:
     rows: 2
     required: false
 ---
-######################## Part C Health Care Information Section ########################
-####### TREATMENT ####################
+######################## Part C Health Care Instructions ########################
+####### LIFE-SUSTAINING TREATMENT ####################
 id: Treatment
 question: |
   Treatment 
@@ -559,7 +563,7 @@ fields:
 ########### DEFAULT SURROGATE INFORMATION #############
 id: Naming default surrogate
 question: |
-  Does you want to name an a different default surrogate for health care decision-making?
+  Do you want to name an a different default surrogate for health care decision-making?
 field: agent_surrogate
 choices:
   - "I wish for my agent or, if applicable, my alternate agent, to be my default surrogate for health care decision-making for any decisions not authorized by this document": True
@@ -637,17 +641,17 @@ fields:
 ##### WITNESS SECTION ########
 id: Witness Information
 sets:
-  - witness.name.first
-  - witness.name.last
-  - witness.name.middle
-  - witness.name.suffix
+  - witnesses.name.first
+  - witnesses.name.last
+  - witnesses.name.middle
+  - witnesses.name.suffix
 question: |
   Witness Information
 subquestion: |
   Provide details about your witness who will sign the document.
 fields:
   - code: |
-     witness.name_fields()
+     witnesses.name_fields()
 ---
 id: preview de_ahcd
 question: |
@@ -814,10 +818,10 @@ review:
     button: |
       **Alternate agent[0] address details**:
       ${ alternate_agents[0].address.address.block() }
-  - Edit: agents_authority
+  - Edit: agents_authority_limits
     button: |
       **Agent authority details**:
-      > ${ single_paragraph(agents_authority) }
+      > ${ single_paragraph(agents_authority_limits) }
   - Edit: body_parts_not_donate
     button: |
       **List any body parts client does NOT wish to donate**:
@@ -962,7 +966,7 @@ attachment:
   filename: de_ahcd
   variable name: de_ahcd_attachment[i]
   skip undefined: True
-  docx template file: de_ahcd.docx
+  docx template file: de_ahcd_new.docx
   tagged pdf: True
 
 
