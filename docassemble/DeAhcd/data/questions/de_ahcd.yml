@@ -118,8 +118,6 @@ code: |
   health_info_incapacitated
   nursing_home
   psychiatric_facility
-  if psychiatric_facility == True:
-    hours_psychiatric_facility  
   agents_authority_limits
   nav.set_section("health_care_instructions")
   medical_treatment_always
@@ -278,10 +276,6 @@ fields:
   - "Agent email": agents[i].email
     required: false
 ---
-code: |
-  is_agents_independent = True
-  is_agents_together = False
----
 id: Agents cooperate
 question: |
   Select how you want your agents to work together
@@ -375,17 +369,18 @@ choices:
 id: Agents Authority Phychiatric Facility
 question: |
   Select whether the agent(s) can place the client in a psychiatric facility
-field: psychiatric_facility
-choices:
-  - "My agent may admit me as a voluntary patient to a facility for mental health treatment for the shorter of 72 hours or the number of hours specified here:": True
-  - "My agent may NOT admit me as a voluntary patient to a facility for mental health treatment.": False
----
-id: Hours at psychiatric facility
-question: |
-   Specify the number of hours the client can be placed in a psychiatric facility
-fields: 
+fields:
+  - no label: psychiatric_facility
+    datatype: radio
+    choices:
+      - "My agent may admit me as a voluntary patient to a facility for mental health treatment for the shorter of 72 hours or the number of hours specified here:": True
+      - "My agent may NOT admit me as a voluntary patient to a facility for mental health treatment.": False
+ 
   - Hours in psychiatric facility: hours_psychiatric_facility
     datatype: integer
+    max: 71
+    min: 1
+    show if: psychiatric_facility
 ---
 id: Agents Authority Other
 question: |
@@ -472,9 +467,9 @@ fields:
     show if: pain_relief_never
   - "Be given to me if I have a terminal illness (a condition that is not curable and is expected to cause my death soon, even if treated).": pain_relief_terminal_illness
     datatype: yesnowide
-  - "Be given to me if I am permanently unconscious (unconscious and I am not expected to be conscious again).": pain_relief_permanently_unconcious
+  - "Be given to me if I am permanently unconscious (unconscious and I am not expected to be conscious again).": pain_relief_permanently_unconscious
     datatype: yesnowide
-  - "Be given to me if I have a medical condition from which I am not expected to recover that prevents me from communicating with people I care about and recognizing family and friends.": pain_relief_no_recovery 
+  - "Be given to me if I have a medical condition from which I am not expected to recover that prevents me from communicating with people I care about and recognizing family and friends.": pain_relief_medical_condition 
     datatype: yesnowide
   - "Other (write what you want or do not want)": pain_relief_other
     datatype: yesnowide
@@ -483,7 +478,7 @@ fields:
     rows: 2
     show if: pain_relief_other
 validation code: |
-  if pain_relief_always and (pain_relief_never or pain_relief_terminal_illness or pain_relief_permanently_unconcious or pain_relief_no_recovery or pain_relief_other) or pain_relief_never and (pain_relief_always or pain_relief_terminal_illness or pain_relief_permanently_unconcious or pain_relief_no_recovery or pain_relief_other):
+  if pain_relief_always and (pain_relief_never or pain_relief_terminal_illness or pain_relief_permanently_unconscious or pain_relief_medical_condition or pain_relief_other) or pain_relief_never and (pain_relief_always or pain_relief_terminal_illness or pain_relief_permanently_unconscious or pain_relief_medical_condition or pain_relief_other):
     validation_error("You cannot mark other choices in this Pain Relief section.")
 ---
 ################ HEALTH CARE PRIORITIES ####################
@@ -778,10 +773,15 @@ review:
     button: |
       **Agent relationship**:
       ${ agents[0].relationship }
-  - Edit: hours_psychiatric_facility
+  - Edit: psychiatric_facility
     button: |
+      **Psychiatric facility**:
+      ${ word(yesno(psychiatric_facility)) }
+      
+      % if psychiatric_facility: 
       **Hours at psychiatric facility**:
       ${ hours_psychiatric_facility }
+      % endif
   - Edit: alternate_agents[0].birthdate
     button: |
       **Alternate agent date of birth**:
@@ -798,10 +798,10 @@ review:
     button: |
       **Agent[1] phone number**:
       ${ agents[1].phone_number }
-  - Edit: default_surrogates.name.first
+  - Edit: default_surrogate.name.first
     button: |
       **Default surrogate first name**:
-      ${ default_surrogates.name.first }
+      ${ default_surrogate.name.first }
   - Edit: agents[1].relationship
     button: |
       **Agent[1] relationship**:
