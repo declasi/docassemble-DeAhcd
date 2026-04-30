@@ -118,6 +118,7 @@ code: |
   health_info_incapacitated
   nursing_home
   psychiatric_facility
+  mh_advance_directive
   agents_authority_limits
   nav.set_section("health_care_instructions")
   medical_treatment_always
@@ -126,9 +127,7 @@ code: |
   nav.set_section("user_priorities")
   users_priorities
   nav.set_section("other_guidance")
-  specific_instructions
-  if specific_instructions == False:
-    flexible_instructions_narrative
+  flexible_instructions
   nav.set_section("guardians_and_surrogates")
   if agent_guardian == False:
     guardian.name.first
@@ -260,7 +259,7 @@ sets:
 question: |
   Agent's contact information
 subquestion: |
-  Provide ${ agents[i].name.first } contact details:
+  Provide ${ agents[i].name.first }'s contact details:
 fields:
   - Street address: agents[i].address.address
     address autocomplete: True
@@ -324,7 +323,7 @@ sets:
 question: |
   Alternate Agent's contact information
 subquestion: |
-  Provide ${ alternate_agents[i].name.first } contact details:
+  Provide ${ alternate_agents[i].name.first }'s contact details:
 fields:
   - Street address: alternate_agents[i].address.address
     address autocomplete: True
@@ -382,6 +381,20 @@ fields:
     min: 1
     show if: psychiatric_facility
 ---
+id: Mental Health Care Advance Directive
+question: |
+  Does the client have a separate Mental Health Advance Directive?
+fields: 
+  - no label: mh_advance_directive
+    datatype: radio
+    choices:
+      - "Yes": True
+      - "No": False
+  - Initial here if you have a separate Menthal Health Advance Directive: users_initials
+    datatype: text
+    maxlength: 4
+    show if: mh_advance_directive
+---
 id: Agents Authority Other
 question: |
   Other Limitations on Agent’s Authority
@@ -406,7 +419,7 @@ fields:
     show if: medical_treatment_always
   - "Not be given to me if I have a terminal illness (a condition that is not curable and is expected to cause my death soon, even if treated).": medical_treatment_terminal_illness
     datatype: yesnowide
-  - "Not be given to me if I am permanently unconscious (unconscious and I am not expected to be conscious again).": medical_treatment_permanently_unconcious
+  - "Not be given to me if I am permanently unconscious (unconscious and I am not expected to be conscious again).": medical_treatment_permanently_unconscious
     datatype: yesnowide
   - "Not be given to me if I have a medical condition from which I am not expected to recover that prevents me from communicating with people I care about and recognizing family and friends.": medical_treatment_no_recovery 
     datatype: yesnowide
@@ -417,7 +430,7 @@ fields:
     rows: 2
     show if: medical_treatment_other
 validation code: |
-  if medical_treatment_always and (medical_treatment_terminal_illness or medical_treatment_permanently_unconcious or medical_treatment_no_recovery or medical_treatment_other):
+  if medical_treatment_always and (medical_treatment_terminal_illness or medical_treatment_permanently_unconscious or medical_treatment_no_recovery or medical_treatment_other):
     validation_error("You cannot mark other choices in this Treatment section.")
 ---
 ################## FOOD AND LIQUIDS ##################
@@ -434,7 +447,7 @@ fields:
     show if: food_always
   - "Not be given to me if I have a terminal illness (a condition that is not curable and is expected to cause my death soon, even if treated).": food_terminal_illness
     datatype: yesnowide
-  - "Not be given to me if I am permanently unconscious (unconscious and I am not expected to be conscious again).": food_permanently_unconcious
+  - "Not be given to me if I am permanently unconscious (unconscious and I am not expected to be conscious again).": food_permanently_unconscious
     datatype: yesnowide
   - "Not be given to me if I have a medical condition from which I am not expected to recover that prevents me from communicating with people I care about and recognizing family and friends.": food_no_recovery 
     datatype: yesnowide
@@ -445,7 +458,7 @@ fields:
     rows: 2
     show if: food_other
 validation code: |
-  if food_always and (food_terminal_illness or food_permanently_unconcious or food_no_recovery or food_other):
+  if food_always and (food_terminal_illness or food_permanently_unconscious or food_no_recovery or food_other):
     validation_error("You cannot mark other choices in this Food and Liquids section.")
 ---
 ########## PAIN RELIEF ####################
@@ -498,18 +511,17 @@ question: |
   Flexibility for My Agent
 subquestion: |
   Select one (1) of the following options
-field: specific_instructions
-choices:
-  - "My agent must follow the instructions in this document, even if my agent thinks something else would be better for me.": True 
-  - "I give my agent permission to be flexible in applying these instructions if my agent thinks it would be in my best interest based on what my agent knows about me.": False
----
-id: Flexible Instructions Narrative
-question: |
-  The agent's flexibility in applying the instructions does not apply to the following
-fields:
-  - Limits in agent's flexibility: flexible_instructions_narrative
+fields: 
+  - no label: flexible_instructions
+    datatype: radio
+    choices:
+      - "My agent must follow the instructions in this document, even if my agent thinks something else would be better for me.": False 
+      - "I give my agent permission to be flexible in applying these instructions if my agent thinks it would be in my best interest based on what my agent knows about me.": True
+
+  - The agent's flexibility in applying the instructions does not apply to the following: flexible_instructions_narrative
     datatype: area
     rows: 2
+    show if: flexible_instructions
 ---
 ##### Nomination of Guardian ########
 id: name guardian
