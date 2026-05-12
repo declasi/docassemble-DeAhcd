@@ -89,9 +89,11 @@ sections:
   - screener: Eligibility check
   - client_info: Client information
   - agents_and_alternates: Naming agents and alternates
-  - guardians_and_witnesses: Guardians & witnesses
-  - health_preferences: Health care instructions
-  - review_and_signature: Review & signature
+  - authority_and_limitations: Authority and Limitations
+  - health_care_instructions: Health Care Instructions
+  - priorities_for_health_care: Priorities for Health Care
+  - other_guidance: Other Guidance
+  - witness: Witness
   - review_de_ahcd: Review your answers
 ---
 ################# INTERVIEW ORDER #################################
@@ -113,8 +115,7 @@ code: |
     alternate_agents.gather()
   if alternate_agents.number_gathered() > 1:
     alternate_agents_independent
-  set_progress(16)
-  nav.set_section("agents_authority")
+  nav.set_section("authority_and_limitations")
   health_info_incapacitated
   nursing_home
   psychiatric_facility
@@ -124,29 +125,27 @@ code: |
   medical_treatment_always
   food_always
   pain_relief_always
-  nav.set_section("user_priorities")
+  nav.set_section("priorities_for_health_care")
   users_priorities
   nav.set_section("other_guidance")
   flexible_instructions
-  nav.set_section("guardians_and_surrogates")
   if agent_guardian == False:
     guardian.name.first
     guardian.address.address
     guardian.phone_number
-  set_progress(32)
   agent_surrogate
   if agent_surrogate == False:
     default_surrogate.name.first
   exclude_default_surrogates
   if exclude_default_surrogates == True:
     exclude_surrogates.gather()
-  nav.set_section("organ_donation")
   donate_organs
   if donate_organs == True:
     body_parts_not_donate
     donation_transplant
   nav.set_section("witness")
   witnesses.name.first
+  nav.set_section("review_de_ahcd")
   interview_order_de_ahcd = True
 ---
 comment: |
@@ -684,124 +683,49 @@ event: review_de_ahcd
 question: |
   Review your answers
 review:
-  - Edit: alternate_agents[1].phone_number
-    button: |
-      **Alternate agent's phone number**:
-      ${ alternate_agents[1].phone_number }
-  - Edit: flexible_instructions_narrative
-    button: |
-      **Flexible instructions description**:
-      > ${ single_paragraph(flexible_instructions_narrative) }
-  - Edit: agents[1].birthdate
-    button: |
-      **Agent date of birth**:
-      ${ agents[1].birthdate }
-  - Edit: alternate_agents[1].email
-    button: |
-      **Alternate agent email**:
-      ${ alternate_agents[1].email }
   - Edit: users.revisit
     button: |
-      **Users**
+      **Edit client information**
 
       % for item in users:
-        * ${ item }
-      % endfor
-  - Edit: guardians.revisit
+      - ${ item }
+      % endfor      
+  - Edit: agents[0].name.first
     button: |
-      **Guardians**
-
-      % for item in guardians:
-        * ${ item }
-      % endfor
-  - Edit: agents[0].address.address
-    button: |
-      **Agent address details**:
-      ${ agents[0].address.address.block() }
-  - Edit: exclude_surrogates[1].name.first
-    button: |
-      **Exclude surrogate first name**:
-      ${ exclude_surrogates[1].name.first }
-  - Edit: alternate_agents[1].relationship
-    button: |
-      **Alternate agent relationship**:
-      ${ alternate_agents[1].relationship }
-  - Edit: exclude_surrogates[0].name.first
-    button: |
-      **Exclude surrogate first name**:
-      ${ exclude_surrogates[0].name.first }
-  - Edit: agents[0].phone_number
-    button: |
-      **Agent phone number**:
-      ${ agents[0].phone_number }
-  - Edit: agents[1].email
-    button: |
-      **Agent email**:
-      ${ agents[1].email }
-  - Edit: alternate_agents[0].email
-    button: |
-      **Alternate agent email**:
-      ${ alternate_agents[0].email }
-  - Edit: agents[1].name.first
-    button: |
-      **Agent first name**:
-      ${ agents[1].name.first }
-  - Edit: witnesses.revisit
-    button: |
-      **Witnesses**
-
-      % for item in witnesses:
-        * ${ item }
-      % endfor
-  - Edit: pain_relief_instructions
-    button: |
-      **Pain relief instructions**:
-      > ${ single_paragraph(pain_relief_instructions) }
-  - Edit: agents[0].email
-    button: |
-      **Agent email**:
-      ${ agents[0].email }
-  - Edit: users_priorities
-    button: |
-      **Client health care priorities**:
-      > ${ single_paragraph(users_priorities) }
+      **Agent name**:
+      ${ agents[0].name.first }
   - Edit: agents[0].birthdate
     button: |
       **Agent date of birth**:
-      ${ agents[0].birthdate }
-  - Edit: alternate_agents[0].name.first
-    button: |
-      **Alternate agent first name**:
-      ${ alternate_agents[0].name.first }
-  - Edit: agents[0].name.first
-    button: |
-      **Agent first name**:
-      ${ agents[0].name.first }
-  - Edit: medical_treatment_instructions
-    button: |
-      **Medical treatment instructions**:
-      > ${ single_paragraph(medical_treatment_instructions) }
+      ${ agents[0].birthdate } 
   - Edit: agents[0].relationship
     button: |
       **Agent relationship**:
       ${ agents[0].relationship }
-  - Edit: psychiatric_facility
+  - Edit: agents[0].address.address
     button: |
-      **Psychiatric facility**:
-      ${ word(yesno(psychiatric_facility)) }
-      
-      % if psychiatric_facility: 
-      **Hours at psychiatric facility**:
-      ${ hours_psychiatric_facility }
-      % endif
-  - Edit: alternate_agents[0].birthdate
+      **Agent address details**:
+      ${ agents[0].address.address.block() }
+  - Edit: agents[0].phone_number
     button: |
-      **Alternate agent date of birth**:
-      ${ alternate_agents[0].birthdate }
-  - Edit: alternate_agents[1].name.first
+      **Agent phone number**:
+      ${ agents[0].phone_number }
+  - Edit: agents[0].email
     button: |
-      **Alternate agent first name**:
-      ${ alternate_agents[1].name.first }
+      **Agent email**:
+      ${ agents[0].email }
+  - Edit: agents[1].name.first
+    button: |
+      **Agent first name**:
+      ${ agents[1].name.first }
+  - Edit: agents[1].birthdate
+    button: |
+      **Agent date of birth**:
+      ${ agents[1].birthdate }
+  - Edit: agents[1].relationship
+    button: |
+      **Agent[1] relationship**:
+      ${ agents[1].relationship }      
   - Edit: agents[1].address.address
     button: |
       **Agent[1] address details**:
@@ -810,18 +734,22 @@ review:
     button: |
       **Agent[1] phone number**:
       ${ agents[1].phone_number }
-  - Edit: default_surrogate.name.first
+  - Edit: agents[1].email
     button: |
-      **Default surrogate first name**:
-      ${ default_surrogate.name.first }
-  - Edit: agents[1].relationship
+      **Agent email**:
+      ${ agents[1].email }
+  - Edit: agents_independent
     button: |
-      **Agent[1] relationship**:
-      ${ agents[1].relationship }
-  - Edit: alternate_agents[0].phone_number
+      **Agents act independently**
+      ${ agents_independent }
+  - Edit: alternate_agents[0].name.first
     button: |
-      **Alternate agent[0] phone number**:
-      ${ alternate_agents[0].phone_number }
+      **Alternate agent first name**:
+      ${ alternate_agents[0].name.first }
+  - Edit: alternate_agents[0].birthdate
+    button: |
+      **Alternate agent date of birth**:
+      ${ alternate_agents[0].birthdate }
   - Edit: alternate_agents[0].relationship
     button: |
       **Alternate agent[0] relationship**:
@@ -830,35 +758,168 @@ review:
     button: |
       **Alternate agent[0] address details**:
       ${ alternate_agents[0].address.address.block() }
-  - Edit: agents_authority_limits
+  - Edit: alternate_agents[0].phone_number
     button: |
-      **Agent authority details**:
-      > ${ single_paragraph(agents_authority_limits) }
-  - Edit: body_parts_not_donate
+      **Alternate agent[0] phone number**:
+      ${ alternate_agents[0].phone_number }
+  - Edit: alternate_agents[0].email
     button: |
-      **List any body parts client does NOT wish to donate**:
-      > ${ single_paragraph(body_parts_not_donate) }
+      **Alternate agent email**:
+      ${ alternate_agents[0].email }
+  - Edit: alternate_agents[1].name.first
+    button: |
+      **Alternate agent first name**:
+      ${ alternate_agents[1].name.first }
   - Edit: alternate_agents[1].birthdate
     button: |
       **Alternate agent[1] date of birth**:
       ${ alternate_agents[1].birthdate }
-  - Edit: food_instructions
+  - Edit: alternate_agents[1].relationship
     button: |
-      **Food instructions**:
+      **Alternate agent relationship**:
+      ${ alternate_agents[1].relationship } 
+  - Edit: alternate_agents[1].address.address
+    button: |
+      **Alternate agent[1] address details**:
+      ${ alternate_agents[1].address.address.block() }    
+  - Edit: alternate_agents[1].phone_number
+    button: |
+      **Alternate agent's phone number**:
+      ${ alternate_agents[1].phone_number }
+  - Edit: alternate_agents[1].email
+    button: |
+      **Alternate agent email**:
+      ${ alternate_agents[1].email }
+  - Edit: psychiatric_facility
+    button: |
+      **Psychiatric facility**:
+      ${ word(yesno(psychiatric_facility)) }
+      
+      % if psychiatric_facility: 
+      **Hours at psychiatric facility**:
+      ${ hours_psychiatric_facility }
+      % endif  
+  - Edit: agents_authority_limits
+    button: |
+      **Agent authority limits**:
+      > ${ single_paragraph(agents_authority_limits) }
+  - Edit: medical_treatment_always
+    button: |
+      **Medical treatment always**
+      ${ word(yesno(medical_treatment_always)) } 
+
+      **Medical treatment terminal illness**
+      ${ word(yesno(medical_treatment_terminal_illness)) }
+
+      **Medical treatement permanently unconscious**
+      ${ word(yesno(medical_treatment_permanently_unconscious)) }
+
+      **Medical treatment no recovery**
+      ${ word(yesno(medical_treatment_no_recovery)) }
+
+      **Medical treatment other**
+      ${ word(yesno(medical_treatment_other)) }
+
+      % if medical_treatment_other: 
+      **Medical Treatment Instructions**:
+      ${ medical_treatment_instructions }
+      % endif  
+  
+  - Edit: food_always
+    button: |
+      **Food always**
+      ${ word(yesno(food_always)) }
+
+      **Food terminal illness**
+      ${ word(yesno(food_terminal_illness)) }
+
+      **Food permanently unconscious**
+      ${ word(yesno(food_permanently_unconscious)) }
+
+      **Food No Recovery**
+      ${ word(yesno(food_no_recovery)) }
+
+      **Food other**
+      ${ word(yesno(food_other)) }
+      
+      % if food_other: 
+      **Food Instructions**:
       ${ food_instructions }
+      % endif       
+      
+  - Edit: pain_relief_always
+    button: |
+      **Pain relief always**
+      ${ word(yesno(pain_relief_always)) }
+
+      **Pain relief never**
+      ${ word(yesno(pain_relief_never)) }
+
+      **Pain relief terminal illness**
+      ${ word(yesno(pain_relief_terminal_illness)) }
+
+      **Pain relief permanently unconscious**
+      ${ word(yesno(pain_relief_permanently_unconscious)) }
+
+      **Pain relief medical condition**
+      ${ word(yesno(pain_relief_medical_condition)) }
+
+      **Pain relief other**
+      ${ word(yesno(pain_relief_other)) }
+
+      % if pain_relief_other:
+      **Pain relief instructions**:
+      ${ pain_relief_instructions }
+      % endif
+  
+  - Edit: users_priorities
+    button: |
+      **Client health care priorities**:
+      > ${ single_paragraph(users_priorities) }      
+  - Edit: flexible_instructions_narrative
+    button: |
+      **Flexible instructions description**:
+      > ${ single_paragraph(flexible_instructions_narrative) }
+  - Edit: guardian.revisit
+    button: |
+      **Guardian**
+      
+      % for item in guardian:
+        * ${ item }
+      % endfor
+  - Edit: default_surrogate.name.first
+    button: |
+      **Default surrogate first name**:
+      ${ default_surrogate.name.first }
+  - Edit: exclude_surrogates[0].name.first
+    button: |
+      **Exclude surrogate first name**:
+      ${ exclude_surrogates[0].name.first }  
+  - Edit: exclude_surrogates[1].name.first
+    button: |
+      **Exclude surrogate first name**:
+      ${ exclude_surrogates[1].name.first }
   - Edit: exclude_surrogates[2].name.first
     button: |
       **Exclude surrogate[2] first name**:
       ${ exclude_surrogates[2].name.first }
-  - Edit: alternate_agents[1].address.address
+  - Edit: body_parts_not_donate
     button: |
-      **Alternate agent[1] address details**:
-      ${ alternate_agents[1].address.address.block() }
+      **List any body parts client does NOT wish to donate**:
+      > ${ single_paragraph(body_parts_not_donate) }
+  - Edit: witnesses.revisit
+    button: |
+      **Witness**
+
+      % for item in witnesses:
+        * ${ item }
+      % endfor
+
 ---
-id: edit users
+id: revisit users
 continue button field: users.revisit
 question: |
-  Edit users
+  Edit client information
 subquestion: |
   ${ users.table }
 
@@ -868,15 +929,15 @@ table: users.table
 rows: users
 columns:
   - Phone number: |
-      row_item.phone_number if defined("row_item.phone_number") else ""
+      row_item.phone_number if hasattr(row_item, "phone_number") else ""
   - Address: |
-      row_item.address.block() if defined("row_item.address.address") else ""
+      row_item.address.block() if hasattr(row_item, "address.address") else ""
   - Name: |
-      row_item.name_full() if defined("row_item.name.first") else ""
+      row_item.name_full() if hasattr(row_item, "name.first") else ""
   - Email: |
-      row_item.email if defined("row_item.email") else ""
+      row_item.email if hasattr(row_item, "email") else ""
   - Birthdate: |
-      row_item.birthdate if defined("row_item.birthdate") else ""
+      row_item.birthdate if hasattr(row_item, "birthdate") else ""
 edit:
   - phone_number
   - address.address
@@ -886,17 +947,17 @@ edit:
 confirm: True
 
 ---
-id: edit guardians
-continue button field: guardians.revisit
+id: edit guardian
+continue button field: guardian.revisit
 question: |
-  Edit guardians
+  Edit guardian
 subquestion: |
-  ${ guardians.table }
+  ${ guardian.table }
 
-  ${ guardians.add_action() }
+  ${ guardian.add_action() }
 ---
-table: guardians.table
-rows: guardians
+table: guardian.table
+rows: guardian
 columns:
   - Address: |
       row_item.address.block() if defined("row_item.address.address") else ""
@@ -917,7 +978,7 @@ confirm: True
 id: edit witnesses
 continue button field: witnesses.revisit
 question: |
-  Edit witnesses
+  Edit witness
 subquestion: |
   ${ witnesses.table }
 
