@@ -885,7 +885,7 @@ review:
       **Guardian**
       
       % for item in guardian:
-        * ${ item }
+      - ${ item }
       % endfor
   - Edit: default_surrogate.name.first
     button: |
@@ -903,16 +903,39 @@ review:
     button: |
       **Exclude surrogate[2] first name**:
       ${ exclude_surrogates[2].name.first }
+
+  - Edit: donate_organs
+    button: |
+      **Do you wish to donate your organs**
+      ${ word(yesno(donate_organs)) }
+        
   - Edit: body_parts_not_donate
     button: |
-      **List any body parts client does NOT wish to donate**:
+      **List any body parts the client does NOT wish to donate**:
       > ${ single_paragraph(body_parts_not_donate) }
+  - Edit: donation_transplant
+    button: |
+      **Transplant**
+      ${ word(yesno(donation_transplant)) }
+
+      **Therapy**
+      ${ word(yesno(donation_therapy)) }
+
+      **Research**
+      ${ word(yesno(donation_research)) }
+
+      **Education**
+      ${ word(yesno(donation_education)) }
+
+      **All of the above**
+      ${ word(yesno(donation_all_reasons)) }
+
   - Edit: witnesses.revisit
     button: |
       **Witness**
 
       % for item in witnesses:
-        * ${ item }
+      - ${ item }
       % endfor
 
 ---
@@ -929,15 +952,15 @@ table: users.table
 rows: users
 columns:
   - Phone number: |
-      row_item.phone_number if hasattr(row_item, "phone_number") else ""
+      row_item.phone_number if hasattr(row_item, 'phone_number') else ''
   - Address: |
-      row_item.address.block() if hasattr(row_item, "address.address") else ""
+      row_item.address.block() if hasattr(row_item, 'address.address') else ''
   - Name: |
-      row_item.name_full() if hasattr(row_item, "name.first") else ""
+      row_item.name_full() if hasattr(row_item, 'name.first') else ''
   - Email: |
-      row_item.email if hasattr(row_item, "email") else ""
+      row_item.email if hasattr(row_item, 'email') else ''
   - Birthdate: |
-      row_item.birthdate if hasattr(row_item, "birthdate") else ""
+      row_item.birthdate if hasattr(row_item, 'birthdate') else ''
 edit:
   - phone_number
   - address.address
