@@ -97,11 +97,14 @@ sections:
   - review_de_ahcd: Review your answers
 ---
 ################# INTERVIEW ORDER #################################
+mandatory: True
 comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_de_ahcd
 code: |
   # Set the allowed courts for this interview
+  al_intro_screen
+  de_ahcd_intro
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
   nav.set_section("client_info")
@@ -110,11 +113,10 @@ code: |
   agents.gather()
   if agents.number_gathered() > 1:
     agents_independent
-  designate_alternate_agents
-  if designate_alternate_agents == True:
+  if designate_alternate_agents:
     alternate_agents.gather()
-  if alternate_agents.number_gathered() > 1:
-    alternate_agents_independent
+    if alternate_agents.number_gathered() > 1:
+      alternate_agents_independent
   nav.set_section("authority_and_limitations")
   health_info_incapacitated
   nursing_home
@@ -146,16 +148,7 @@ code: |
   nav.set_section("witness")
   witnesses.name.first
   nav.set_section("review_de_ahcd")
-  interview_order_de_ahcd = True
----
-comment: |
-  This block includes the logic for standalone interviews.
-  Delete mandatory: True to include in another interview
-mandatory: True
-code: |
-  al_intro_screen
-  de_ahcd_intro
-  interview_order_de_ahcd
+
   signature_date
   # Store anonymous data for analytics / statistics
   store_variables_snapshot(
@@ -288,6 +281,13 @@ question: |
   Does the client want to name an alternate agent(s)?
 yesno: designate_alternate_agents
 ---
+id: alternate agents another
+question: |
+  Do you want to include another?
+fields:
+  - Include another?: alternate_agents.there_is_another
+    datatype: yesnoradio
+---
 code: | 
   alternate_agents[i].name.first
   alternate_agents[i].address.address
@@ -307,7 +307,14 @@ sets:
 question: |
   Naming the Client's Alternate Agent(s)
 subquestion: |
-  List the person(s) the client wants to make health care decisions for them if their agent(s) are unavailable, unwilling, or unable to act.
+  % if agents.number_gathered() > 0: 
+    #Secondary agent#
+    List the second person the client wants to make health care decisions for them if their agent(s) are unavailable, unwilling, or unable to act.
+  % else:
+    #First agent#
+    List the person the client wants to make health care decisions for them if their agent(s) are unavailable, unwilling, or unable to act.
+  % endif 
+
 fields:
   - code: |
       alternate_agents[i].name_fields()
@@ -683,113 +690,145 @@ event: review_de_ahcd
 question: |
   Review your answers
 review:
-  - Edit: users.revisit
+  - Edit: users.name.first
     button: |
-      **Edit client information**
+      **Client Name**
+      ${ users.name_full() }
 
-      % for item in users:
-      - ${ item }
-      % endfor      
+      **Client date of birth**
+      ${ users.birthdate }
+
+      **Client address**
+      ${ users.address.on_one_line() }
+
+      **Client phone**
+      ${ users.phone_number}
+
+      **Client email**
+      ${ users.email }
+ 
   - Edit: agents[0].name.first
     button: |
-      **Agent name**:
-      ${ agents[0].name.first }
-  - Edit: agents[0].birthdate
-    button: |
-      **Agent date of birth**:
-      ${ agents[0].birthdate } 
-  - Edit: agents[0].relationship
-    button: |
-      **Agent relationship**:
-      ${ agents[0].relationship }
+      **Agent's name**:
+      ${ agents[0].name_full() }
+
+      **Agent's date of birth**:
+      ${ agents[0].birthdate }
+
+      **Agent's relationship**:
+      ${ agents[0].relationship }      
+      
+      % if len(agents.complete_elements()) < 2:
+      ${ agents.add_action() }
+      % endif      
+
   - Edit: agents[0].address.address
     button: |
-      **Agent address details**:
-      ${ agents[0].address.address.block() }
-  - Edit: agents[0].phone_number
-    button: |
-      **Agent phone number**:
+      **Agent's address details**:
+      ${ agents[0].address.on_one_line() }
+
+      **Agent's phone number**:
       ${ agents[0].phone_number }
-  - Edit: agents[0].email
-    button: |
-      **Agent email**:
+
+      **Agent's email**:
       ${ agents[0].email }
+
   - Edit: agents[1].name.first
     button: |
-      **Agent first name**:
-      ${ agents[1].name.first }
-  - Edit: agents[1].birthdate
-    button: |
-      **Agent date of birth**:
+      **Second Agent's name**:
+      ${ agents[1].name_full() }
+
+      **Second Agent's date of birth**:
       ${ agents[1].birthdate }
-  - Edit: agents[1].relationship
-    button: |
-      **Agent[1] relationship**:
-      ${ agents[1].relationship }      
+
+      **Second Agent's relationship**:
+      ${ agents[1].relationship }   
+
+    show if:
+      agents.number_gathered() == 2  
+
   - Edit: agents[1].address.address
     button: |
-      **Agent[1] address details**:
-      ${ agents[1].address.address.block() }
-  - Edit: agents[1].phone_number
-    button: |
-      **Agent[1] phone number**:
+      **Second Agent's address details**:
+      ${ agents[1].address.on_one_line() }
+
+      **Second Agent's phone number**:
       ${ agents[1].phone_number }
-  - Edit: agents[1].email
-    button: |
-      **Agent email**:
+
+      **Second Agent's email**:
       ${ agents[1].email }
+
+    show if:
+      agents.number_gathered() == 2
+
   - Edit: agents_independent
     button: |
       **Agents act independently**
-      ${ agents_independent }
+      ${ word(yesno(agents_independent)) }
+
+  - Edit: designate_alternate_agents
+    button: |
+      **Does the client want to name an alternate agent(s)?**
+      ${ word(yesno(designate_alternate_agents)) }
   - Edit: alternate_agents[0].name.first
     button: |
-      **Alternate agent first name**:
-      ${ alternate_agents[0].name.first }
-  - Edit: alternate_agents[0].birthdate
-    button: |
-      **Alternate agent date of birth**:
+      **Alternate agent's name**:
+      ${ alternate_agents[0].name_full() }
+
+      **Alternate agent's date of birth**:
       ${ alternate_agents[0].birthdate }
-  - Edit: alternate_agents[0].relationship
-    button: |
-      **Alternate agent[0] relationship**:
+
+      **Alternate agent's relationship**:
       ${ alternate_agents[0].relationship }
+
+      % if len(alternate_agents.complete_elements()) < 2:
+      ${ alternate_agents.add_action() }
+      % endif 
+
   - Edit: alternate_agents[0].address.address
     button: |
-      **Alternate agent[0] address details**:
-      ${ alternate_agents[0].address.address.block() }
-  - Edit: alternate_agents[0].phone_number
-    button: |
-      **Alternate agent[0] phone number**:
+      **Alternate agent's address details**:
+      ${ alternate_agents[0].address.on_one_line() }
+
+      **Alternate agent's phone number**:
       ${ alternate_agents[0].phone_number }
-  - Edit: alternate_agents[0].email
-    button: |
-      **Alternate agent email**:
+
+      **Alternate agent's email**:
       ${ alternate_agents[0].email }
+
   - Edit: alternate_agents[1].name.first
     button: |
-      **Alternate agent first name**:
-      ${ alternate_agents[1].name.first }
-  - Edit: alternate_agents[1].birthdate
-    button: |
-      **Alternate agent[1] date of birth**:
+      **Second Alternate agent's name**:
+      ${ alternate_agents[1].name_full() }
+
+      **Second Alternate agent's date of birth**:
       ${ alternate_agents[1].birthdate }
-  - Edit: alternate_agents[1].relationship
-    button: |
-      **Alternate agent relationship**:
+
+      **Second Alternate agent's relationship**:
       ${ alternate_agents[1].relationship } 
+
+    show if:
+      alternate_agents.number_gathered() == 2 
+  
   - Edit: alternate_agents[1].address.address
     button: |
-      **Alternate agent[1] address details**:
-      ${ alternate_agents[1].address.address.block() }    
-  - Edit: alternate_agents[1].phone_number
-    button: |
-      **Alternate agent's phone number**:
+      **Second Alternate agent's address**:
+      ${ alternate_agents[1].address.on_one_line() }    
+
+      **Second Alternate agent's phone number**:
       ${ alternate_agents[1].phone_number }
-  - Edit: alternate_agents[1].email
-    button: |
-      **Alternate agent email**:
+
+      **Second Alternate agent's email**:
       ${ alternate_agents[1].email }
+
+    show if:
+      alternate_agents.number_gathered() == 2
+
+  - Edit: alternate_agents_independent
+    button: |
+      **Agents act independently**
+      ${ word(yesno(alternate_agents_independent)) }
+
   - Edit: psychiatric_facility
     button: |
       **Psychiatric facility**:
@@ -799,10 +838,13 @@ review:
       **Hours at psychiatric facility**:
       ${ hours_psychiatric_facility }
       % endif  
+
   - Edit: agents_authority_limits
     button: |
       **Agent authority limits**:
       > ${ single_paragraph(agents_authority_limits) }
+  - note: |
+      <h4>Medical Treatment</h4
   - Edit: medical_treatment_always
     button: |
       **Medical treatment always**
@@ -880,29 +922,27 @@ review:
     button: |
       **Flexible instructions description**:
       > ${ single_paragraph(flexible_instructions_narrative) }
-  - Edit: guardian.revisit
+
+  - Edit: guardian.name.first
     button: |
       **Guardian**
-      
-      % for item in guardian:
-      - ${ item }
-      % endfor
+      ${ guardian.name_full() }
+     
   - Edit: default_surrogate.name.first
     button: |
-      **Default surrogate first name**:
-      ${ default_surrogate.name.first }
+      **Default surrogate name**:
+      ${ default_surrogate.name_full() }
+
   - Edit: exclude_surrogates[0].name.first
     button: |
       **Exclude surrogate first name**:
-      ${ exclude_surrogates[0].name.first }  
-  - Edit: exclude_surrogates[1].name.first
-    button: |
-      **Exclude surrogate first name**:
-      ${ exclude_surrogates[1].name.first }
-  - Edit: exclude_surrogates[2].name.first
-    button: |
-      **Exclude surrogate[2] first name**:
-      ${ exclude_surrogates[2].name.first }
+      ${ exclude_surrogates[0].name_full() }  
+
+      **Second Excluded surrogate name**:
+      ${ exclude_surrogates[1].name_full() }
+
+      **Third Excluded surrogate name**:
+      ${ exclude_surrogates[2].name_full() }
 
   - Edit: donate_organs
     button: |
@@ -930,91 +970,10 @@ review:
       **All of the above**
       ${ word(yesno(donation_all_reasons)) }
 
-  - Edit: witnesses.revisit
+  - Edit: witnesses.name.first
     button: |
-      **Witness**
-
-      % for item in witnesses:
-      - ${ item }
-      % endfor
-
----
-id: revisit users
-continue button field: users.revisit
-question: |
-  Edit client information
-subquestion: |
-  ${ users.table }
-
-  ${ users.add_action() }
----
-table: users.table
-rows: users
-columns:
-  - Phone number: |
-      row_item.phone_number if hasattr(row_item, 'phone_number') else ''
-  - Address: |
-      row_item.address.block() if hasattr(row_item, 'address.address') else ''
-  - Name: |
-      row_item.name_full() if hasattr(row_item, 'name.first') else ''
-  - Email: |
-      row_item.email if hasattr(row_item, 'email') else ''
-  - Birthdate: |
-      row_item.birthdate if hasattr(row_item, 'birthdate') else ''
-edit:
-  - phone_number
-  - address.address
-  - name.first
-  - email
-  - birthdate
-confirm: True
-
----
-id: edit guardian
-continue button field: guardian.revisit
-question: |
-  Edit guardian
-subquestion: |
-  ${ guardian.table }
-
-  ${ guardian.add_action() }
----
-table: guardian.table
-rows: guardian
-columns:
-  - Address: |
-      row_item.address.block() if defined("row_item.address.address") else ""
-  - Phone number: |
-      row_item.phone_number if defined("row_item.phone_number") else ""
-  - Email: |
-      row_item.email if defined("row_item.email") else ""
-  - Name: |
-      row_item.name_full() if defined("row_item.name.first") else ""
-edit:
-  - address.address
-  - phone_number
-  - email
-  - name.first
-confirm: True
-
----
-id: edit witnesses
-continue button field: witnesses.revisit
-question: |
-  Edit witness
-subquestion: |
-  ${ witnesses.table }
-
-  ${ witnesses.add_action() }
----
-table: witnesses.table
-rows: witnesses
-columns:
-  - Name: |
-      row_item.name_full() if defined("row_item.name.first") else ""
-edit:
-  - name.first
-confirm: True
+      **Witness Name**
+      ${ witnesses.name_full() }
 
 ---
 id: download de_ahcd
